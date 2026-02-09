@@ -365,22 +365,25 @@
             } else {
                 showLoader(true, `Architecting ${tech} Path...`);
                 try {
-                    // UPDATED PROMPT: "Zero to Hero" / roadmap.sh style comprehensive structure
-                    const prompt = `Create the world's most comprehensive 'Zero to Hero' technical roadmap for ${tech}.
-                    Structure the content chronologically: Beginner -> Intermediate -> Advanced -> Expert -> Legacy/Internal patterns.
+                    // UPDATED PROMPT: W3Schools style exhaustive syllabus
+                    const prompt = `Generate an extremely detailed, exhaustive learning roadmap for ${tech}, modeled strictly after the comprehensive syllabus structure of w3schools.
+                    It must be a "Zero to Hero" guide covering every single syntax element, core concept, and advanced feature.
+
+                    Organize the content into specific, granular modules (e.g., "${tech} Syntax", "${tech} Variables", "${tech} Arrays", "${tech} Async", "${tech} DOM/API").
                     
-                    Break down into at least 15-20 discrete Modules.
-                    For each module, provide an exhaustive list of subtopics covering:
-                    - Exact syntax, semantics, and memory models
-                    - Internal engine/compiler details (how it works under the hood)
-                    - Standard library deep-dives
-                    - Best practices, design patterns, and anti-patterns
-                    - Tooling, ecosystem, and deployment
-                    
+                    The roadmap should include (adapted for ${tech}):
+                    - Basics: Syntax, Comments, Variables, Operators, Data Types.
+                    - Control Flow: If/Else, Switch, Loops (For, While), Break/Continue.
+                    - Functions: Definitions, Parameters, Invocation, Closures, Arrow Functions.
+                    - Objects/Classes: Properties, Methods, Constructors, Inheritance, Prototypes.
+                    - Advanced: Async/Await, Promises, Modules, Error Handling, Debugging.
+                    - Standard Library/API: Math, Dates, JSON, RegExp, Collections (Maps/Sets).
+                    - Ecosystem: Versions, Tools, Best Practices.
+
                     Return ONLY a valid JSON array of objects: 
-                    [{ "title": "1. [Module Name]", "subtopics": ["Detailed Concept 1", "Detailed Concept 2", ...] }]
+                    [{ "title": "Module Title", "subtopics": ["Specific Topic 1", "Specific Topic 2", ...] }]
                     
-                    Ensure the subtopics are granular (e.g. not just "Loops", but "Loop unrolling", "Performance of for vs map").`;
+                    Ensure the output is extensive (20+ modules) to serve as a complete reference manual.`;
                     
                     const data = await fetchGemini(prompt, true);
                     setCached(cacheKey, data);
