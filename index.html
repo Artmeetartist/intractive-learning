@@ -1,36 +1,41 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> <!-- Default to dark mode -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Learning Roadmap</title>
+    <title>DeeCode - Mastery Roadmap</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Monaco Editor Loader -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js"></script>
     <style>
         :root {
-            --bg-primary: #111827; /* gray-900 */
-            --bg-secondary: #1f2937; /* gray-800 */
-            --bg-tertiary: #374151; /* gray-700 */
-            --text-primary: #f9fafb; /* gray-50 */
-            --text-secondary: #d1d5db; /* gray-300 */
-            --accent-primary: #22d3ee; /* cyan-400 */
-            --accent-secondary: #06b6d4; /* cyan-500 */
-            --border-color: #4b5563; /* gray-600 */
-            --correct-color: #10B981; /* green-500 */
-            --incorrect-color: #EF4444; /* red-500 */
+            /* Light Mode (High Contrast B&W) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f4f4f5; 
+            --bg-tertiary: #e4e4e7;
+            --text-primary: #000000;
+            --text-secondary: #52525b;
+            --accent-primary: #000000; 
+            --accent-secondary: #27272a;
+            --border-color: #000000;
+            --correct-color: #000000; /* Black for correct in B&W theme */
+            --incorrect-color: #7f1d1d; /* Dark Red remains for error visibility */
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        html:not(.dark) {
-            --bg-primary: #f9fafb; /* gray-50 */
-            --bg-secondary: #ffffff; /* white */
-            --bg-tertiary: #f3f4f6; /* gray-100 */
-            --text-primary: #111827; /* gray-900 */
-            --text-secondary: #374151; /* gray-700 */
-            --accent-primary: #0e7490; /* cyan-700 */
-            --accent-secondary: #0891b2; /* cyan-600 */
-            --border-color: #e5e7eb; /* gray-200 */
+        html.dark {
+            /* Dark Mode (High Contrast B&W) */
+            --bg-primary: #000000;
+            --bg-secondary: #121212;
+            --bg-tertiary: #27272a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent-primary: #ffffff;
+            --accent-secondary: #d4d4d8;
+            --border-color: #ffffff;
+            --correct-color: #ffffff;
+            --incorrect-color: #f87171;
         }
 
         body {
@@ -39,1027 +44,711 @@
             color: var(--text-primary);
             transition: background-color 0.3s, color 0.3s;
         }
-        
-        /* Custom styles for dynamic themeing */
+
+        /* Utility Classes using Vars */
         .bg-primary { background-color: var(--bg-primary); }
         .bg-secondary { background-color: var(--bg-secondary); }
         .bg-tertiary { background-color: var(--bg-tertiary); }
         .text-primary { color: var(--text-primary); }
         .text-secondary { color: var(--text-secondary); }
         .text-accent { color: var(--accent-primary); }
-        .border-themed { border-color: var(--border-color); }
-        .hover-bg-tertiary:hover { background-color: var(--bg-tertiary); }
-        .hover-border-accent:hover { border-color: var(--accent-secondary); }
+        .border-themed { border-color: var(--border-color); border-width: 1px; }
+        .font-mono { font-family: var(--font-mono); }
+        
+        /* Interactive Elements */
+        .btn-base {
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .btn-base:hover {
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px var(--border-color);
+        }
+        .btn-base:active {
+            transform: translateY(0);
+            box-shadow: 0px 0px 0px var(--border-color);
+        }
 
         .roadmap-item:not(:last-child)::after {
             content: ''; position: absolute; left: 50%; top: 100%;
             width: 2px; height: 2rem; background-color: var(--border-color);
             transform: translateX(-50%);
-        }
-        @media (min-width: 768px) {
-            .md-road-branch::before {
-                content: ''; position: absolute; top: 50%; right: 100%;
-                width: 2rem; height: 2px; background-color: var(--border-color);
-            }
-        }
-        .tech-button { transition: all 0.3s ease; }
-        .tech-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(34, 211, 238, 0.1);
-        }
-        .quiz-option.correct { background-color: var(--correct-color) !important; color: white !important; }
-        .quiz-option.incorrect { background-color: var(--incorrect-color) !important; color: white !important; }
-        .quiz-option[disabled] { cursor: not-allowed; }
-
-        /* Animation Styles */
-        .feedback-animation { animation: zoomIn 0.5s ease-out; }
-        .feedback-animation.incorrect-anim { animation: shake 0.5s ease-in-out; }
-        
-        @keyframes zoomIn {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            z-index: 0;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Progress Indicator Styles */
-        .progress-indicator {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+        /* Loader */
+        .loader-block {
+            width: 20px; height: 20px; background-color: var(--accent-primary);
+            animation: flip 1s infinite;
         }
-        .topic-completed .progress-indicator {
-            background-color: var(--correct-color);
-            border-color: var(--correct-color);
-            color: white;
-        }
+        @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(180deg); } 100% { transform: rotateX(180deg) rotateY(180deg); } }
+
+        /* Markdown Styles */
+        .prose h1, .prose h2, .prose h3 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 700; color: var(--text-primary); }
+        .prose h1 { font-size: 2em; border-bottom: 2px solid var(--border-color); padding-bottom: 0.2em; }
+        .prose h2 { font-size: 1.5em; }
+        .prose p { margin-bottom: 1em; line-height: 1.6; }
+        .prose code { background-color: var(--bg-tertiary); padding: 0.2em 0.4em; font-family: var(--font-mono); font-size: 0.9em; }
+        .prose pre { background-color: var(--bg-secondary); padding: 1em; overflow-x: auto; margin-bottom: 1em; border: 1px solid var(--border-color); }
+        .prose blockquote { border-left: 4px solid var(--text-primary); padding-left: 1em; font-style: italic; }
+
+        /* Chat Styles */
+        .chat-msg { max-width: 80%; padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); }
+        .chat-user { align-self: flex-end; background-color: var(--bg-tertiary); }
+        .chat-ai { align-self: flex-start; background-color: var(--bg-primary); }
     </style>
 </head>
 <body>
 
     <div id="app" class="container mx-auto p-4 md:p-8">
 
-        <!-- Login Screen -->
-        <div id="loginScreen" class="hidden min-h-screen flex items-center justify-center">
-            <div class="max-w-md w-full bg-secondary p-8 rounded-xl shadow-lg">
-                <h2 class="text-3xl font-bold text-center text-accent mb-2">Welcome Back</h2>
-                <p class="text-center text-secondary mb-8">Sign in to continue your learning journey.</p>
-                
-                <div id="auth-error" class="bg-red-500/20 text-red-300 p-3 rounded-md mb-4 text-sm hidden"></div>
-
-                <form id="loginForm">
-                    <div class="mb-4">
-                        <label for="loginEmail" class="block text-secondary text-sm font-bold mb-2">Email</label>
-                        <input type="email" id="loginEmail" required class="w-full px-3 py-2 bg-tertiary border border-themed rounded-md focus:outline-none focus:ring focus:ring-accent-secondary" placeholder="you@example.com">
-                    </div>
-                    <div class="mb-6">
-                        <label for="loginPassword" class="block text-secondary text-sm font-bold mb-2">Password</label>
-                        <input type="password" id="loginPassword" required class="w-full px-3 py-2 bg-tertiary border border-themed rounded-md focus:outline-none focus:ring focus:ring-accent-secondary" placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="w-full bg-accent hover:bg-cyan-500 text-primary font-bold py-2 px-4 rounded-md transition-colors">Sign In</button>
-                </form>
-
-                <div class="text-center text-secondary mt-4 text-sm">
-                    <p>Don't have an account? <a href="#" id="showRegister" class="text-accent hover:underline">Sign Up</a></p>
-                    <p class="my-2">or</p>
-                     <button id="guestSignIn" class="text-accent hover:underline">Continue as Guest</button>
-                </div>
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-12 border-b-2 border-themed pb-6 gap-6">
+            <div class="flex flex-col">
+                <h1 class="text-5xl font-bold tracking-tighter">DeeCode</h1>
+                <p class="text-sm font-mono mt-2 bg-text-primary text-bg-primary inline-block px-2 py-1">MASTER THE CRAFT.</p>
             </div>
-
-            <div id="registerFormContainer" class="max-w-md w-full bg-secondary p-8 rounded-xl shadow-lg hidden">
-                 <h2 class="text-3xl font-bold text-center text-accent mb-2">Create Account</h2>
-                <p class="text-center text-secondary mb-8">Start your personalized learning path today.</p>
-
-                <div id="register-error" class="bg-red-500/20 text-red-300 p-3 rounded-md mb-4 text-sm hidden"></div>
-
-                <form id="registerForm">
-                    <div class="mb-4">
-                        <label for="registerEmail" class="block text-secondary text-sm font-bold mb-2">Email</label>
-                        <input type="email" id="registerEmail" required class="w-full px-3 py-2 bg-tertiary border border-themed rounded-md focus:outline-none focus:ring focus:ring-accent-secondary" placeholder="you@example.com">
-                    </div>
-                    <div class="mb-6">
-                        <label for="registerPassword" class="block text-secondary text-sm font-bold mb-2">Password</label>
-                        <input type="password" id="registerPassword" required minlength="6" class="w-full px-3 py-2 bg-tertiary border border-themed rounded-md focus:outline-none focus:ring focus:ring-accent-secondary" placeholder="6+ characters">
-                    </div>
-                    <button type="submit" class="w-full bg-accent hover:bg-cyan-500 text-primary font-bold py-2 px-4 rounded-md transition-colors">Sign Up</button>
-                </form>
-                <div class="text-center text-secondary mt-4 text-sm">
-                    <p>Already have an account? <a href="#" id="showLogin" class="text-accent hover:underline">Sign In</a></p>
-                </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="window.clearData()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary">Reset</button>
+                <button id="themeToggle" class="btn-base p-3 rounded-none bg-primary text-primary">
+                    <span id="theme-text" class="font-bold text-xs uppercase">Theme</span>
+                </button>
             </div>
-        </div>
-
+        </header>
 
         <!-- Main Content -->
-        <main id="mainContent" class="hidden">
-            <!-- Header -->
-            <header class="text-center mb-12 relative">
-                <h1 class="text-4xl md:text-5xl font-bold text-accent">Interactive Learning Roadmap</h1>
-                <p class="text-secondary mt-2">Powered by <span class="font-semibold text-accent">DeeCode</span></p>
-                <div id="userInfo" class="absolute top-0 left-0 text-left">
-                    <p id="user-greeting" class="text-secondary"></p>
-                    <button id="signOutBtn" class="text-xs text-accent hover:underline">Sign Out</button>
+        <main id="mainContent" class="min-h-screen flex flex-col">
+            
+            <!-- Tech Selection -->
+            <div id="techSelection" class="flex-grow flex flex-col items-center fade-in">
+                <h2 class="text-2xl font-bold mb-8 text-center uppercase tracking-wide border-b border-themed pb-2">Select Your Path</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl pb-10">
+                    <!-- Tech buttons injected here -->
                 </div>
-                <button id="themeToggle" class="absolute top-0 right-0 p-2 rounded-full hover-bg-tertiary">
-                    <svg id="theme-icon-light" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    <svg id="theme-icon-dark" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                </button>
-            </header>
-
-            <!-- Technology Selection Screen -->
-            <div id="techSelection" class="max-w-4xl mx-auto">
-                <h2 class="text-2xl font-bold text-center mb-8">Choose Your Learning Path</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
 
             <!-- Roadmap Container -->
-            <div id="roadmapContainer" class="hidden">
-                 <button id="backButton" class="mb-8 bg-tertiary hover:bg-cyan-600 font-bold py-2 px-4 rounded-lg transition-colors">&larr; Back to Topics</button>
-                <div id="roadmapContent"></div>
+            <div id="roadmapContainer" class="hidden flex flex-col h-full fade-in">
+                 <div class="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-themed pb-4">
+                    <div class="flex items-center gap-4">
+                        <button id="backButton" class="btn-base bg-primary font-bold py-2 px-6 text-sm uppercase">
+                            &larr; Back
+                        </button>
+                        <div>
+                            <h2 id="currentRoadmapTitle" class="text-3xl font-bold uppercase"></h2>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                         <div class="flex justify-between text-xs font-mono mb-1">
+                             <span>PROGRESS</span>
+                             <span id="progressText">0%</span>
+                         </div>
+                        <div class="w-full border border-themed h-4 p-0.5">
+                            <div id="roadmapProgressBar" class="bg-text-primary h-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                 </div>
+                <div id="roadmapContent" class="pb-20 max-w-4xl mx-auto"></div>
             </div>
         </main>
         
-        <!-- Modals and Overlays -->
-        <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden">
-             <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-cyan-500"></div>
-                <p id="loaderText" class="mt-4 text-white">Generating your learning path...</p>
-            </div>
-        </div>
-        <div id="errorMessage" class="hidden fixed bottom-5 right-5 max-w-sm bg-red-900/80 border border-red-700 text-red-300 px-4 py-3 rounded-lg z-50"></div>
-        <div id="contentModal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-40 flex justify-center items-center p-4">
-            <div id="modal-container" class="bg-secondary rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col transition-all duration-300">
-                <div class="flex justify-between items-center p-4 border-t border-b border-themed">
-                    <h2 id="modalTitle" class="text-2xl font-bold text-accent"></h2>
-                    <div class="flex items-center gap-4">
-                        <button id="markCompleteBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Mark as Complete</button>
-                        <button id="closeModal" class="text-secondary hover:text-primary text-3xl leading-none">&times;</button>
+        <!-- Modal -->
+        <div id="contentModal" class="hidden fixed inset-0 bg-bg-primary/90 z-50 flex justify-center items-center p-0 md:p-6 backdrop-blur-sm">
+            <div id="modal-container" class="bg-primary w-full max-w-6xl h-full md:h-[90vh] flex flex-col border-2 border-themed shadow-2xl relative">
+                
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-themed bg-secondary">
+                    <h2 id="modalTitle" class="text-xl md:text-2xl font-bold truncate pr-4 uppercase tracking-tight"></h2>
+                    <div class="flex items-center gap-3">
+                        <button onclick="window.exportTopicToHTML()" class="btn-base flex items-center gap-2 bg-primary px-3 py-1 text-xs font-bold uppercase" title="Download Offline Copy">
+                            <span>Save .html</span>
+                        </button>
+                        <button id="markCompleteBtn" class="btn-base flex items-center gap-2 bg-primary px-3 py-1 text-xs font-bold uppercase">
+                            <span>Mark Done</span>
+                        </button>
+                        <button id="closeModal" class="hover:bg-text-primary hover:text-bg-primary p-1 transition-colors border border-transparent hover:border-themed">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                     </div>
                 </div>
+
+                <!-- Tabs -->
                 <div class="flex border-b border-themed">
-                    <button id="conceptTab" class="flex-1 p-3 bg-tertiary text-primary font-semibold">Concept</button>
-                    <button id="practiceTab" class="flex-1 p-3 text-secondary font-semibold">Practice IDE</button>
-                    <button id="quizTab" class="flex-1 p-3 text-secondary font-semibold">Quiz</button>
+                    <button id="conceptTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Concept</button>
+                    <button id="practiceTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Practice</button>
+                    <button id="quizTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Quiz</button>
+                    <button id="tutorTab" class="flex-1 py-4 text-sm font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2">
+                        <span>AI Tutor</span>
+                        <span class="text-[10px] bg-text-primary text-bg-primary px-1 rounded">NEW</span>
+                    </button>
                 </div>
-                <div id="modalContent" class="p-6 overflow-y-auto flex-grow"></div>
+
+                <!-- Content Area -->
+                <div id="modalContent" class="p-6 overflow-y-auto flex-grow relative bg-primary font-mono text-sm leading-relaxed">
+                    <!-- Dynamic Content -->
+                </div>
             </div>
         </div>
+        
+        <!-- Loading Overlay -->
+        <div id="loader" class="fixed inset-0 bg-bg-primary/95 z-[60] flex flex-col justify-center items-center hidden">
+             <div class="loader-block mb-6"></div>
+             <p id="loaderText" class="font-mono text-lg uppercase tracking-widest">Processing...</p>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="errorMessage" class="hidden fixed bottom-5 right-5 max-w-sm bg-incorrect-color text-white px-6 py-4 border-2 border-black z-[70] font-bold shadow-xl"></div>
+
     </div>
 
     <script type="module">
-        // Firebase Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // --- Configuration ---
+        const apiKey = ''; 
+        
+        // Comprehensive Subject List
+        const subjectList = [
+            "HTML", "CSS", "JavaScript", "TypeScript", "React", "Redux", "Node.js", "Express.js", 
+            "SQL", "MySQL", "MongoDB", "API", "System Design", "Interview Prep", "Python", 
+            "DSA", "AI", "ML", "NLP", "Cloud Computing", "DevOps", "Data Science", 
+            "Data Analytics", "Cybersecurity", "Ethical Hacking", "AI & Automation", 
+            "DSA with C++", "DSA with Java", "Advance DSA", "Projects", "Neural Network", 
+            "MAANG", "FAANG", "Advance Projects", "Job Ready Projects", "Real World Projects", "Futuristic Projects"
+        ];
 
-        // DOM Elements
-        const themeToggle = document.getElementById('themeToggle');
-        const loginScreen = document.getElementById('loginScreen');
-        const mainContent = document.getElementById('mainContent');
-        const userInfo = document.getElementById('userInfo');
-        const userGreeting = document.getElementById('user-greeting');
-        const signOutBtn = document.getElementById('signOutBtn');
-        const techSelection = document.getElementById('techSelection');
-        const loader = document.getElementById('loader');
-        const loaderText = document.getElementById('loaderText');
-        const errorMessage = document.getElementById('errorMessage');
-        const roadmapContainer = document.getElementById('roadmapContainer');
-        const roadmapContent = document.getElementById('roadmapContent');
-        const backButton = document.getElementById('backButton');
-        const contentModal = document.getElementById('contentModal');
-        const modalContainer = document.getElementById('modal-container');
-        const modalTitle = document.getElementById('modalTitle');
-        const closeModalButton = document.getElementById('closeModal');
-        const conceptTab = document.getElementById('conceptTab');
-        const practiceTab = document.getElementById('practiceTab');
-        const quizTab = document.getElementById('quizTab');
-        const modalContent = document.getElementById('modalContent');
-        const markCompleteBtn = document.getElementById('markCompleteBtn');
-        // Auth form elements
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const showRegisterBtn = document.getElementById('showRegister');
-        const showLoginBtn = document.getElementById('showLogin');
-        const registerFormContainer = document.getElementById('registerFormContainer');
-        const guestSignInBtn = document.getElementById('guestSignIn');
-        const authErrorDiv = document.getElementById('auth-error');
-        const registerErrorDiv = document.getElementById('register-error');
-
-        // App State
-        let apiKey = 'AIzaSyAeo_ba2jQyDO0Tl4FV89MVaAtosMFCkXE';
+        // --- State ---
         let currentTopic = null;
         let currentTechnology = null;
         let monacoEditorInstance = null;
-        let currentTopicCache = {};
-        let quizState = { questions: [], currentQuestionIndex: 0, score: 0, userAnswers: [] };
+        let currentTopicCache = {}; 
+        let quizState = { questions: [], currentQuestionIndex: 0, score: 0 };
         let progress = {};
         let currentRoadmapData = [];
-        let userId = null;
-        let db, auth;
-        const appId = 'interactive-learning-7c67d'; // Hardcoded App ID for standalone use
+        let chatHistory = [];
 
-        const technologies = {
-            'HTML': "Generate a learning roadmap for HTML. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'CSS': "Generate a learning roadmap for CSS. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'JavaScript': "Generate a learning roadmap for JavaScript. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'TypeScript': "Generate a learning roadmap for TypeScript. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'React': "Generate a learning roadmap for React. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Redux': "Generate a learning roadmap for Redux. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Node.js': "Generate a learning roadmap for Node.js. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Express.js': "Generate a learning roadmap for Express.js. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'SQL': "Generate a learning roadmap for SQL. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'MySQL': "Generate a learning roadmap for MySQL. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'MongoDB': "Generate a learning roadmap for MongoDB. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'API': "Generate a learning roadmap for API Design. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'System Design': "Generate a learning roadmap for System Design. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Interview Prep': "Generate a learning roadmap for Technical Interviews. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Python': "Generate a learning roadmap for Python. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'DSA': "Generate a learning roadmap for Data Structures & Algorithms. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'AI': "Generate a learning roadmap for Artificial Intelligence. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'ML': "Generate a learning roadmap for Machine Learning. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'NLP': "Generate a learning roadmap for Natural Language Processing. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Cloud Computing': "Generate a learning roadmap for Cloud Computing. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'DevOps': "Generate a learning roadmap for DevOps. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Data Science': "Generate a learning roadmap for Data Science. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Data Analytics': "Generate a learning roadmap for Data Analytics. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Cybersecurity': "Generate a learning roadmap for Cybersecurity. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Ethical Hacking': "Generate a learning roadmap for Ethical Hacking. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'AI & Automation': "Generate a learning roadmap for AI & Automation. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'DSA with C++': "Generate a learning roadmap for DSA with C++. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'DSA with Java': "Generate a learning roadmap for DSA with Java. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Advance DSA': "Generate a learning roadmap for Advance DSA. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Projects': "Generate a learning roadmap for Projects. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Neural Network': "Generate a learning roadmap for Neural Network. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'MAANG': "Generate a learning roadmap for MAANG interview prep. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'FAANG': "Generate a learning roadmap for FAANG interview prep. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Advance Projects': "Generate a learning roadmap for Advance Projects. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Job Ready Projects': "Generate a learning roadmap for Job Ready Projects. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Real World Projects': "Generate a learning roadmap for Real World Projects. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure.",
-            'Futuristic Projects': "Generate a learning roadmap for Futuristic Projects. IMPORTANT: Respond ONLY with a valid JSON array of objects. Each object must have exactly two keys: 'title' (a string) and 'subtopics' (an array of strings). Do not add any text, markdown, or any properties outside of this JSON structure."
+        // --- Storage Keys ---
+        const STORAGE_KEYS = {
+            PROGRESS: 'deecode_progress',
+            ROADMAP_PREFIX: 'deecode_map_',
+            CONTENT_PREFIX: 'deecode_content_'
         };
 
-        // --- Firebase Setup ---
-        function initializeFirebase() {
+        // --- DOM Elements ---
+        const els = {
+            techSelection: document.getElementById('techSelection'),
+            roadmapContainer: document.getElementById('roadmapContainer'),
+            roadmapContent: document.getElementById('roadmapContent'),
+            currentRoadmapTitle: document.getElementById('currentRoadmapTitle'),
+            roadmapProgressBar: document.getElementById('roadmapProgressBar'),
+            progressText: document.getElementById('progressText'),
+            modal: document.getElementById('contentModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            modalContent: document.getElementById('modalContent'),
+            loader: document.getElementById('loader'),
+            loaderText: document.getElementById('loaderText'),
+            error: document.getElementById('errorMessage'),
+            markCompleteBtn: document.getElementById('markCompleteBtn'),
+            tabs: {
+                concept: document.getElementById('conceptTab'),
+                practice: document.getElementById('practiceTab'),
+                quiz: document.getElementById('quizTab'),
+                tutor: document.getElementById('tutorTab')
+            }
+        };
+
+        // --- Local Storage Helpers ---
+        function loadLocalData() {
             try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyBYF7T_nkyHdjhmhmlnUuaFGihw5_7Dy3Q",
-                    authDomain: "interactive-learning-7c67d.firebaseapp.com",
-                    projectId: "interactive-learning-7c67d",
-                    storageBucket: "interactive-learning-7c67d.firebasestorage.app",
-                    messagingSenderId: "589831109361",
-                    appId: "1:589831109361:web:d774697dd6335ac4238750",
-                    measurementId: "G-YS774ENE9W"
-                };
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                handleAuthentication();
-            } catch (e) {
-                console.error("Firebase initialization error:", e);
-                showError("Could not initialize cloud features. Please refresh.");
-                loginScreen.classList.remove('hidden'); // Show login even on error
+                const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+                if (savedProgress) progress = JSON.parse(savedProgress);
+            } catch (e) { console.error(e); }
+        }
+
+        function saveLocalProgress() {
+            try { localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress)); } catch (e) { }
+        }
+
+        function getCached(key) {
+            try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+        }
+
+        function setCached(key, data) {
+            try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Storage full'); }
+        }
+
+        window.clearData = () => {
+            if(confirm("RESET DEECODE?\nThis will wipe all progress and downloaded roadmaps.")) {
+                localStorage.clear();
+                window.location.reload();
             }
-        }
+        };
 
-        // --- Authentication ---
-        function handleAuthentication() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    loginScreen.classList.add('hidden');
-                    mainContent.classList.remove('hidden');
-                    await startApp(user);
-                } else {
-                    mainContent.classList.add('hidden');
-                    loginScreen.classList.remove('hidden');
-                }
-            });
-        }
+        // --- API Interaction ---
+        async function fetchGemini(prompt, isJson = false) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            // System instruction for consistent "Senior Engineer" persona
+            const systemInstruction = {
+                role: "user",
+                parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to provide job-ready, industry-standard, comprehensive technical knowledge. Be concise, authoritative, and practical. Use 'I' when teaching." }]
+            };
 
-        async function startApp(user) {
-            userId = user.uid;
-            if(user.isAnonymous) {
-                 userGreeting.textContent = `Welcome, Guest!`;
-            } else {
-                 userGreeting.textContent = `Welcome, ${user.email}!`;
-            }
-            userInfo.classList.remove('hidden');
-            await loadProgress(userId);
-        }
-        
-        // --- Auth UI Logic ---
-        function showAuthError(form, message) {
-            const errorDiv = form === 'login' ? authErrorDiv : registerErrorDiv;
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
+            const payload = { 
+                contents: [
+                    systemInstruction,
+                    { role: "user", parts: [{ text: prompt }] }
+                ],
+                generationConfig: isJson ? { responseMimeType: "application/json" } : {} 
+            };
 
-        showRegisterBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginForm.parentElement.classList.add('hidden');
-            registerFormContainer.classList.remove('hidden');
-        });
-
-        showLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            registerFormContainer.classList.add('hidden');
-            loginForm.parentElement.classList.remove('hidden');
-        });
-        
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = loginForm['loginEmail'].value;
-            const password = loginForm['loginPassword'].value;
-            signInWithEmailAndPassword(auth, email, password)
-                .catch(error => showAuthError('login', error.message));
-        });
-
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = registerForm['registerEmail'].value;
-            const password = registerForm['registerPassword'].value;
-            createUserWithEmailAndPassword(auth, email, password)
-                .catch(error => showAuthError('register', error.message));
-        });
-
-        guestSignInBtn.addEventListener('click', () => {
-             signInAnonymously(auth).catch(error => showAuthError('login', error.message));
-        });
-
-        signOutBtn.addEventListener('click', () => {
-            signOut(auth);
-        });
-
-        // --- Progress Management ---
-        async function loadProgress(uid) {
-            const docRef = doc(db, "artifacts", appId, "users", uid, "progress", "data");
             try {
-                const docSnap = await getDoc(docRef);
-                progress = docSnap.exists() ? docSnap.data() : {};
-                 // After loading progress, re-render the current view if necessary
-                if (roadmapContainer.classList.contains('hidden') === false) {
-                     renderRoadmap(currentRoadmapData);
-                }
+                const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                if (!res.ok) throw new Error("API Error");
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                return isJson ? JSON.parse(text) : text;
             } catch (e) {
-                console.error("Error loading progress:", e);
-                // Don't show an error here for offline mode, just log it.
-                // The app can function without loaded progress.
-                progress = {};
+                console.error(e);
+                throw e;
             }
         }
 
-        async function saveProgress() {
-            if (!userId || !db) return;
-            const docRef = doc(db, "artifacts", appId, "users", userId, "progress", "data");
-            try {
-                await setDoc(docRef, progress);
-            } catch (e) {
-                console.error("Error saving progress:", e);
-                showError("Could not save progress to the cloud.");
-            }
-        }
+        // --- Core Application Logic ---
 
-        const handleMarkAsComplete = () => {
-            if (!progress[currentTechnology]) {
-                progress[currentTechnology] = [];
-            }
-            if (!progress[currentTechnology].includes(currentTopic)) {
-                progress[currentTechnology].push(currentTopic);
-                saveProgress();
-                updateMarkCompleteButton();
-                renderRoadmap(currentRoadmapData);
-            }
-        };
-
-        const updateMarkCompleteButton = () => {
-            const isCompleted = progress[currentTechnology]?.includes(currentTopic);
-            if (isCompleted) {
-                markCompleteBtn.textContent = 'Completed ✔';
-                markCompleteBtn.disabled = true;
-                markCompleteBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                markCompleteBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
-            } else {
-                markCompleteBtn.textContent = 'Mark as Complete';
-                markCompleteBtn.disabled = false;
-                markCompleteBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                markCompleteBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
-            }
-        };
-        
-        // --- Theme Management ---
-        const applyTheme = (theme) => {
-            const isDark = theme === 'dark';
-            document.documentElement.classList.toggle('dark', isDark);
-            document.getElementById('theme-icon-light').classList.toggle('hidden', isDark);
-            document.getElementById('theme-icon-dark').classList.toggle('hidden', !isDark);
-        };
-
-        const handleThemeToggle = () => {
-            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-            if (monacoEditorInstance) {
-                monaco.editor.setTheme(newTheme === 'dark' ? 'vs-dark' : 'vs');
-            }
-        };
-        
-        // --- NEW: Robust JSON Extractor ---
-        function extractJson(str) {
-            let firstBracket = -1;
-            let firstCurly = str.indexOf('{');
-            let firstSquare = str.indexOf('[');
-
-            if (firstCurly === -1) firstBracket = firstSquare;
-            else if (firstSquare === -1) firstBracket = firstCurly;
-            else firstBracket = Math.min(firstCurly, firstSquare);
-
-            if (firstBracket === -1) return null;
-
-            let openChar = str[firstBracket];
-            let closeChar = openChar === '{' ? '}' : ']';
-            let openCount = 1;
-
-            for (let i = firstBracket + 1; i < str.length; i++) {
-                if (str[i] === openChar) openCount++;
-                else if (str[i] === closeChar) openCount--;
-                
-                if (openCount === 0) {
-                    return str.substring(firstBracket, i + 1);
-                }
-            }
-            return null; // Mismatched brackets
-        }
-
-
-        // --- API Communication ---
-        async function fetchWithExponentialBackoff(prompt, isJson = false) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: {} };
-            if (isJson) payload.generationConfig.responseMimeType = "application/json";
-
-            let retries = 3, delay = 1000;
-            while (retries > 0) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 503) {
-                            throw new Error("The learning service is currently busy. Please try again in a moment.");
-                        }
-                        const errorBody = await response.json();
-                        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error?.message || 'Unknown error'}`);
-                    }
-                    const result = await response.json();
-                    if (result.candidates && result.candidates[0].content.parts.length > 0) {
-                        let content = result.candidates[0].content.parts[0].text;
-                        if (isJson) {
-                            const jsonString = extractJson(content);
-                            if (jsonString) {
-                                try {
-                                    return JSON.parse(jsonString);
-                                } catch (e) {
-                                    console.error("Failed to parse extracted JSON:", jsonString, e);
-                                    throw new Error("API returned invalid JSON content.");
-                                }
-                            }
-                            console.error("Could not find valid JSON in response:", content);
-                            throw new Error("No valid JSON found in API response.");
-                        }
-                        return content;
-                    } else {
-                        if (result.promptFeedback && result.promptFeedback.blockReason) throw new Error(`API call blocked: ${result.promptFeedback.blockReason}`);
-                        throw new Error("No content received from API.");
-                    }
-                } catch (error) {
-                    console.error(`Attempt failed: ${error.message}`);
-                    retries--;
-                    if (retries === 0) throw error;
-                    await new Promise(res => setTimeout(res, delay));
-                    delay *= 2;
-                }
-            }
-        }
-
-        // --- UI Rendering & Notifications ---
-        function showLoader(show, text = 'Generating content...') { 
-            loaderText.textContent = text;
-            loader.classList.toggle('hidden', !show);
-        }
-        function showError(message) { 
-            errorMessage.textContent = `Error: ${message}`;
-            errorMessage.classList.remove('hidden');
-            setTimeout(() => errorMessage.classList.add('hidden'), 5000);
-        }
-        
-        function renderTechSelection() {
-            const container = techSelection.querySelector('.grid');
-            container.innerHTML = Object.keys(technologies).map(tech => `
-                <button data-tech="${tech}" class="tech-button bg-secondary border border-themed rounded-lg p-6 text-center hover-bg-tertiary hover-border-accent">
-                    <h3 class="text-xl font-bold text-accent">${tech}</h3>
+        // 1. Initial Render
+        function init() {
+            loadLocalData();
+            const grid = els.techSelection.querySelector('.grid');
+            grid.innerHTML = subjectList.map(tech => `
+                <button onclick="window.loadRoadmap('${tech}')" class="btn-base group bg-secondary p-8 flex flex-col items-center justify-center gap-4 h-40 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 font-black text-6xl select-none group-hover:opacity-20 transition-opacity">${tech.substring(0,1)}</div>
+                    <h3 class="text-xl font-bold z-10 text-center uppercase tracking-wider">${tech}</h3>
                 </button>
             `).join('');
         }
-        
-        function renderRoadmap(data) {
-            let topics = Array.isArray(data) ? data : null;
-            currentRoadmapData = topics;
 
-            roadmapContent.innerHTML = '';
-            if (!topics) {
-                roadmapContent.innerHTML = `<p class="text-secondary text-center">Could not generate a valid roadmap. Please try again.</p>`;
-                return;
-            }
-            const mainPath = document.createElement('div');
-            mainPath.className = 'relative flex flex-col items-center';
-            const completedForLang = progress[currentTechnology] || [];
-
-            topics.forEach(topic => {
-                if (topic && topic.title) {
-                    const isCompleted = completedForLang.includes(topic.title);
-                    const item = createRoadmapItem(topic.title, true, isCompleted);
-                    mainPath.appendChild(item);
-
-                    if (topic.subtopics && Array.isArray(topic.subtopics) && topic.subtopics.length > 0) {
-                        const subtopicContainer = document.createElement('div');
-                        subtopicContainer.className = 'relative md:pl-8 lg:pl-16 mt-4 w-full flex flex-col md:items-start';
-                        
-                        topic.subtopics.forEach(subtopic => {
-                            if (subtopic) {
-                                const isSubCompleted = completedForLang.includes(subtopic);
-                                const subItem = createRoadmapItem(subtopic, false, isSubCompleted);
-                                subtopicContainer.appendChild(subItem);
-                            }
-                        });
-                        mainPath.appendChild(subtopicContainer);
-                    }
-                }
-            });
-            roadmapContent.appendChild(mainPath);
-        }
-
-        function createRoadmapItem(title, isMainTopic, isCompleted) {
-            const item = document.createElement('div');
-            item.className = `roadmap-item relative my-4 ${isCompleted ? 'topic-completed' : ''}`;
-            
-            const button = document.createElement('button');
-            const buttonBaseClass = 'flex items-center gap-3 text-left transition-all duration-300 transform hover:scale-105';
-            const mainTopicClass = 'bg-tertiary text-accent border-2 border-accent font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-accent hover:text-primary';
-            const subTopicClass = 'md-road-branch bg-secondary text-secondary border border-themed py-2 px-4 rounded-md hover-bg-tertiary hover-border-accent';
-            button.className = `${buttonBaseClass} ${isMainTopic ? mainTopicClass : subTopicClass}`;
-            
-            const checkmark = isCompleted ? '✔' : '';
-            button.innerHTML = `
-                <div class="progress-indicator">
-                    <span class="text-xs font-bold">${checkmark}</span>
-                </div>
-                <span>${title}</span>
-            `;
-            button.onclick = () => handleTopicClick(title);
-            item.appendChild(button);
-            return item;
-        }
-
-        function renderContent(content) {
-             let htmlContent = content
-                .replace(/```(javascript|python|html|css|)\n([\s\S]*?)```/g, (match, lang, code) => {
-                    const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    return `<div class="bg-primary rounded-md my-4 overflow-hidden">
-                                <div class="bg-tertiary px-4 py-2 text-xs flex justify-between items-center">
-                                    <span>${lang || 'code'}</span>
-                                    <button class="run-snippet-btn bg-secondary text-accent px-2 py-1 rounded text-xs hover:bg-primary">Run Code</button>
-                                </div>
-                                <pre class="p-4 text-sm"><code class="language-${lang}">${escapedCode}</code></pre>
-                                <div class="snippet-output hidden bg-primary border-t border-themed p-2 text-xs"></div>
-                           </div>`;
-                })
-                .replace(/`([^`]+)`/g, '<code class="bg-tertiary text-accent rounded px-1 py-0.5 text-sm">$1</code>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-
-            modalContent.innerHTML = `<div class="prose prose-invert max-w-none text-primary">${htmlContent}</div>`;
-            
-            document.querySelectorAll('.run-snippet-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const codeBlock = e.target.closest('.bg-primary').querySelector('code');
-                    const outputDiv = e.target.closest('.bg-primary').querySelector('.snippet-output');
-                    runCode(codeBlock.textContent, outputDiv, currentTechnology);
-                });
-            });
-             // Add download buttons
-            const downloadContainer = document.createElement('div');
-            downloadContainer.className = 'mt-8 pt-4 border-t border-themed flex gap-4 justify-end';
-            downloadContainer.innerHTML = `
-                <button id="copy-html-btn" class="bg-secondary hover-bg-tertiary border border-themed text-primary font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" /><path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h6a2 2 0 00-2-2H5z" /></svg>
-                    Copy Source Code
-                </button>
-                <button id="download-html-btn" class="bg-secondary hover-bg-tertiary border border-themed text-primary font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-                    Download HTML
-                </button>
-            `;
-            modalContent.appendChild(downloadContainer);
-            document.getElementById('copy-html-btn').addEventListener('click', copyConceptHTML);
-            document.getElementById('download-html-btn').addEventListener('click', generateConceptHTML);
-        }
-        
-        function renderIDE(data) {
-            if (!data || !data.problem) {
-                modalContent.innerHTML = `<p class="text-secondary">Could not generate a practice problem.</p>`;
-                return;
-            }
-            modalContent.innerHTML = `
-                <div class="flex flex-col h-full" style="min-height: 60vh;">
-                    <div class="mb-4">
-                        <h3 class="font-bold text-lg mb-2 text-accent">Coding Problem:</h3>
-                        <p class="text-secondary">${data.problem}</p>
-                    </div>
-                    <div class="flex-grow flex flex-col">
-                        <label for="code-editor-container" class="text-sm font-medium text-secondary mb-2">Your Code:</label>
-                        <div id="code-editor-container" class="w-full h-full min-h-[300px] border border-themed rounded-md"></div>
-                    </div>
-                    <div id="ide-output" class="mt-4 hidden">
-                        <label class="text-sm font-medium text-secondary mb-2">Output:</label>
-                        <pre class="bg-primary text-secondary p-3 rounded-md border border-themed text-sm whitespace-pre-wrap"></pre>
-                    </div>
-                    <div id="hint-box" class="hidden mt-4 p-3 bg-tertiary/50 rounded-lg text-sm text-secondary"></div>
-                    <div class="mt-4 flex gap-4 flex-wrap">
-                        <button id="run-code-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">Run Code</button>
-                        <button id="hint-btn" class="bg-tertiary hover:bg-cyan-700 text-primary font-bold py-2 px-4 rounded-md transition-colors">Show Hint</button>
-                        <button id="answer-btn" class="bg-accent hover:bg-cyan-500 text-primary font-bold py-2 px-4 rounded-md transition-colors">Reveal Solution</button>
-                        <button id="new-question-btn" class="bg-secondary hover-bg-tertiary border border-themed text-primary font-bold py-2 px-4 rounded-md transition-colors">New Problem</button>
-                    </div>
-                </div>
-            `;
-            
-            initializeIDE(data);
-        }
-
-        function initializeIDE(problemData) {
-            if (monacoEditorInstance) monacoEditorInstance.dispose();
-            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
-            require(['vs/editor/editor.main'], function () {
-                const editorContainer = document.getElementById('code-editor-container');
-                let lang = currentTechnology.toLowerCase();
-                if (lang === 'dsa' || lang === 'react') lang = 'javascript';
-
-                monacoEditorInstance = monaco.editor.create(editorContainer, {
-                    value: `// Write your ${lang} solution here`,
-                    language: lang,
-                    theme: document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs',
-                    automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on'
-                });
-
-                document.getElementById('hint-btn').addEventListener('click', () => {
-                    document.getElementById('hint-box').textContent = `Hint: ${problemData.hint}`;
-                    document.getElementById('hint-box').classList.remove('hidden');
-                });
-                document.getElementById('answer-btn').addEventListener('click', () => monacoEditorInstance.setValue(problemData.solution));
-                document.getElementById('new-question-btn').addEventListener('click', () => handleTabClick('practice', true));
-                document.getElementById('run-code-btn').addEventListener('click', () => {
-                    const outputEl = document.getElementById('ide-output').querySelector('pre');
-                    runCode(monacoEditorInstance.getValue(), outputEl, currentTechnology);
-                });
-            });
-        }
-
-        function runCode(code, outputEl, technology) {
-            outputEl.parentElement.classList.remove('hidden');
-            let lang = technology.toLowerCase();
-            if (lang === 'dsa' || lang === 'react') lang = 'javascript';
-
-            try {
-                if (lang === 'javascript') {
-                    let capturedLogs = [];
-                    const originalLog = console.log;
-                    console.log = (...args) => {
-                        capturedLogs.push(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' '));
-                    };
-                    
-                    new Function(code)();
-                    console.log = originalLog;
-                    outputEl.textContent = capturedLogs.length > 0 ? capturedLogs.join('\n') : 'Code executed without errors and no output to console.';
-                    outputEl.classList.remove('text-red-400');
-                } else if (lang === 'html' || lang === 'css') {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.width = '100%';
-                    iframe.style.height = '150px';
-                    iframe.style.border = 'none';
-                    iframe.className = 'bg-white rounded-md';
-                    const content = lang === 'html' ? code : `<style>${code}</style><body>Check the rendered output above.</body>`;
-                    iframe.srcdoc = content;
-                    outputEl.innerHTML = '';
-                    outputEl.appendChild(iframe);
-                } else {
-                    outputEl.textContent = `Execution for ${technology} is not supported in this browser-based environment.`;
-                }
-            } catch (e) {
-                outputEl.textContent = `Error: ${e.message}`;
-                outputEl.classList.add('text-red-400');
-            }
-        }
-
-        function renderQuizContainer(quizData) {
-            modalContent.innerHTML = `<div id="quiz-panel" class="bg-primary p-4 rounded-lg flex flex-col max-w-2xl mx-auto"></div>`;
-            initializeQuiz(quizData);
-        }
-
-        function initializeQuiz(quizData) {
-            quizState = { questions: quizData, currentQuestionIndex: 0, score: 0, userAnswers: [] };
-            renderQuiz();
-        }
-
-        function renderQuiz() {
-            const quizPanel = document.getElementById('quiz-panel');
-            if (!quizState.questions || !Array.isArray(quizState.questions) || quizState.questions.length === 0) {
-                quizPanel.innerHTML = `<p class="text-secondary">Could not generate a quiz.</p>`;
-                return;
-            }
-
-            if (quizState.currentQuestionIndex >= quizState.questions.length) {
-                renderScoreboard();
-                return;
-            }
-
-            const q = quizState.questions[quizState.currentQuestionIndex];
-            quizPanel.innerHTML = `
-                <div class="flex-grow flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg text-accent">Multiple Choice Quiz</h3>
-                        <p class="text-sm text-secondary">${quizState.currentQuestionIndex + 1} / ${quizState.questions.length}</p>
-                    </div>
-                    <p class="text-secondary mb-4 h-24 overflow-y-auto">${q.question}</p>
-                    <div id="quiz-options" class="space-y-2">
-                        ${q.options.map((opt, i) => `<button data-index="${i}" class="quiz-option w-full text-left p-3 bg-tertiary hover-bg-tertiary rounded-md transition-colors">${opt}</button>`).join('')}
-                    </div>
-                </div>
-                <div id="quiz-feedback" class="mt-4"></div>
-            `;
-
-            const optionButtons = quizPanel.querySelectorAll('.quiz-option');
-            optionButtons.forEach(btn => btn.addEventListener('click', handleOptionSelect));
-        }
-        
-        function handleOptionSelect(e) {
-            const selectedButton = e.target;
-            const selectedIndex = parseInt(selectedButton.dataset.index);
-            const q = quizState.questions[quizState.currentQuestionIndex];
-            const isCorrect = q.options[selectedIndex] === q.answer;
-
-            if (isCorrect) {
-                quizState.score++;
-            }
-
-            const optionButtons = document.querySelectorAll('.quiz-option');
-            optionButtons.forEach(btn => btn.disabled = true);
-
-            const correctIndex = q.options.indexOf(q.answer);
-            optionButtons[correctIndex].classList.add('correct');
-            if (!isCorrect) {
-                selectedButton.classList.add('incorrect');
-            }
-
-            showQuizFeedback(q.explanation);
-        }
-
-        function showQuizFeedback(explanation) {
-            const feedbackPanel = document.getElementById('quiz-feedback');
-            feedbackPanel.innerHTML = `
-                <div class="p-4 bg-tertiary/50 rounded-lg">
-                    <h4 class="font-bold text-accent mb-2">Explanation</h4>
-                    <p class="text-secondary text-sm">${explanation}</p>
-                </div>
-                <button id="next-q-btn" class="mt-4 w-full bg-accent hover:bg-cyan-500 text-primary font-bold py-2 px-4 rounded-md transition-colors">Next</button>
-            `;
-            document.getElementById('next-q-btn').addEventListener('click', () => {
-                quizState.currentQuestionIndex++;
-                renderQuiz();
-            });
-        }
-
-        function renderScoreboard() {
-            const quizPanel = document.getElementById('quiz-panel');
-            const finalScore = Math.round((quizState.score / quizState.questions.length) * 100);
-            quizPanel.innerHTML = `
-                <div class="text-center flex-grow flex flex-col justify-center items-center">
-                    <h3 class="text-2xl font-bold text-accent">Quiz Complete!</h3>
-                    <p class="text-secondary mt-4">Your Score:</p>
-                    <p class="text-6xl font-bold text-primary my-2">${finalScore}<span class="text-3xl text-secondary">/100</span></p>
-                    <div class="flex gap-4 mt-6">
-                        <button id="retake-quiz-btn" class="bg-tertiary hover:bg-cyan-700 text-primary font-bold py-2 px-6 rounded-md transition-colors">Retake Quiz</button>
-                        <button id="new-quiz-btn" class="bg-accent hover:bg-cyan-500 text-primary font-bold py-2 px-6 rounded-md transition-colors">New Quiz</button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('retake-quiz-btn').addEventListener('click', () => {
-                initializeQuiz(currentTopicCache.quiz);
-            });
-            document.getElementById('new-quiz-btn').addEventListener('click', () => {
-                handleTabClick('quiz', true);
-            });
-        }
-        
-        function getConceptHTMLSource() {
-            const contentHTML = document.querySelector('#modalContent .prose').innerHTML;
-            const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            return `
-                <!DOCTYPE html>
-                <html lang="en" class="${theme}">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>${currentTopic} - Key Concepts</title>
-                    <script src="https://cdn.tailwindcss.com"><\/script>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-                    <style>
-                        body {
-                            font-family: 'Inter', sans-serif;
-                            background-color: ${theme === 'dark' ? '#111827' : '#f9fafb'};
-                            color: ${theme === 'dark' ? '#f9fafb' : '#111827'};
-                            padding: 1rem;
-                        }
-                        .prose { max-width: 800px; margin: 2rem auto; }
-                        strong { color: ${theme === 'dark' ? '#f9fafb' : '#111827'}; }
-                        code { background-color: ${theme === 'dark' ? '#374151' : '#f3f4f6'}; color: ${theme === 'dark' ? '#22d3ee' : '#0e7490'}; border-radius: 4px; padding: 2px 4px;}
-                    </style>
-                </head>
-                <body>
-                    <div class="prose">
-                        <h1>${currentTopic} - Key Concepts</h1>
-                        ${contentHTML}
-                    </div>
-                </body>
-                </html>
-            `;
-        }
-
-        function copyConceptHTML() {
-            const htmlSource = getConceptHTMLSource();
-            const copyButton = document.getElementById('copy-html-btn');
-            const originalText = copyButton.innerHTML;
-
-            const textArea = document.createElement("textarea");
-            textArea.value = htmlSource;
-            textArea.style.position = "fixed";
-            textArea.style.top = 0;
-            textArea.style.left = 0;
-            textArea.style.opacity = 0;
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                copyButton.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                    Copied!
-                `;
-            } catch (err) {
-                showError('Oops, unable to copy');
-            }
-            document.body.removeChild(textArea);
-            
-            setTimeout(() => { copyButton.innerHTML = originalText; }, 2000);
-        }
-
-
-        function generateConceptHTML() {
-            const html = getConceptHTMLSource();
-            const blob = new Blob([html], { type: 'text/html' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${currentTopic}_Concepts.html`;
-            a.click();
-            URL.revokeObjectURL(a.href);
-        }
-
-        // --- Event Handlers & Logic ---
-        async function loadRoadmap(tech) {
+        // 2. Load Roadmap
+        window.loadRoadmap = async (tech) => {
             currentTechnology = tech;
-            techSelection.classList.add('hidden');
-            errorMessage.classList.add('hidden');
-            showLoader(true, `Generating roadmap for ${tech}...`);
-            try {
-                const prompt = technologies[tech];
-                const topics = await fetchWithExponentialBackoff(prompt, true);
-                renderRoadmap(topics);
-                roadmapContainer.classList.remove('hidden');
-            } catch (error) {
-                showError(error.message);
-                showTechSelectionScreen();
-            } finally {
-                showLoader(false);
-            }
-        }
+            els.techSelection.classList.add('hidden');
+            els.roadmapContainer.classList.remove('hidden');
+            els.currentRoadmapTitle.textContent = tech;
 
-        function handleTopicClick(topic) {
-            currentTopic = topic;
-            // currentTechnology is already set by loadRoadmap
-            currentTopicCache = {};
-            modalTitle.textContent = topic;
-            updateMarkCompleteButton();
-            contentModal.classList.remove('hidden');
-            handleTabClick('concept');
-        }
+            const cacheKey = STORAGE_KEYS.ROADMAP_PREFIX + tech;
+            const cached = getCached(cacheKey);
 
-        async function handleTabClick(tabName, forceRefresh = false) {
-            [conceptTab, practiceTab, quizTab].forEach(tab => {
-                tab.classList.remove('bg-tertiary', 'text-primary');
-                tab.classList.add('text-secondary');
-            });
-            const activeTab = document.getElementById(`${tabName}Tab`);
-            activeTab.classList.add('bg-tertiary', 'text-primary');
-            activeTab.classList.remove('text-secondary');
-
-            if (tabName === 'quiz') {
-                modalContainer.classList.remove('max-w-7xl', 'max-w-5xl');
-                modalContainer.classList.add('max-w-3xl');
+            if (cached) {
+                renderRoadmap(cached);
             } else {
-                modalContainer.classList.remove('max-w-3xl');
-                modalContainer.classList.add('max-w-5xl');
+                showLoader(true, `Architecting ${tech} Path...`);
+                try {
+                    const prompt = `Generate a highly detailed, job-ready learning roadmap for ${tech}. 
+                    Return ONLY a JSON array of objects. Each object: { "title": "Main Topic", "subtopics": ["Subtopic 1", "Subtopic 2", ...] }. 
+                    Include advanced concepts, best practices, and interview-critical topics.`;
+                    
+                    const data = await fetchGemini(prompt, true);
+                    setCached(cacheKey, data);
+                    renderRoadmap(data);
+                } catch (err) {
+                    showError("Connection failed. Try again.");
+                    els.techSelection.classList.remove('hidden');
+                    els.roadmapContainer.classList.add('hidden');
+                } finally {
+                    showLoader(false);
+                }
             }
+        };
 
-            if (forceRefresh) currentTopicCache[tabName] = null;
+        function renderRoadmap(data) {
+            currentRoadmapData = data;
+            els.roadmapContent.innerHTML = '';
+            const completedList = progress[currentTechnology] || [];
 
-            if (currentTopicCache[tabName]) {
-                if(tabName === 'concept') renderContent(currentTopicCache.concept);
-                else if (tabName === 'practice') renderIDE(currentTopicCache.practice);
-                else renderQuizContainer(currentTopicCache.quiz);
+            // Draw line
+            const line = document.createElement('div');
+            line.className = "absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border-color transform md:-translate-x-1/2 z-0";
+            els.roadmapContent.appendChild(line);
+
+            data.forEach((topic, idx) => {
+                const isCompleted = completedList.includes(topic.title);
+                const isRight = idx % 2 === 0;
+                
+                const item = document.createElement('div');
+                item.className = `relative w-full mb-12 flex ${isRight ? 'md:justify-start' : 'md:justify-end'} justify-end pl-12 md:pl-0 fade-in`;
+                item.style.animationDelay = `${idx * 0.05}s`;
+
+                item.innerHTML = `
+                    <!-- Center Node -->
+                    <div class="absolute left-4 md:left-1/2 w-4 h-4 bg-bg-primary border-2 border-border-color transform -translate-x-1/2 mt-6 z-10 ${isCompleted ? 'bg-text-primary' : ''}"></div>
+                    
+                    <!-- Content Card -->
+                    <div class="w-full md:w-[45%] btn-base bg-bg-primary p-6 relative ${isRight ? 'md:mr-8' : 'md:ml-8'}">
+                        <button onclick="window.openTopic('${topic.title}')" class="w-full text-left">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold uppercase leading-tight">${topic.title}</h3>
+                                ${isCompleted ? '<span class="text-[10px] bg-text-primary text-bg-primary px-1 font-mono">DONE</span>' : ''}
+                            </div>
+                            <p class="text-xs text-text-secondary font-mono mb-4">${topic.subtopics.length} Modules</p>
+                            
+                            <!-- Mini Subtopic List -->
+                            <div class="space-y-1">
+                                ${topic.subtopics.slice(0, 3).map(sub => `
+                                    <div class="flex items-center gap-2 text-xs text-text-secondary">
+                                        <div class="w-1 h-1 bg-text-secondary"></div>
+                                        <span>${sub}</span>
+                                    </div>
+                                `).join('')}
+                                ${topic.subtopics.length > 3 ? `<div class="text-xs text-text-secondary pl-3">... +${topic.subtopics.length - 3} more</div>` : ''}
+                            </div>
+                        </button>
+                    </div>
+                `;
+                els.roadmapContent.appendChild(item);
+            });
+            updateProgress();
+        }
+
+        // 3. Topic Modal & Tabs
+        window.openTopic = (topic) => {
+            currentTopic = topic;
+            currentTopicCache = {}; 
+            chatHistory = []; // Reset chat for new topic
+            els.modalTitle.textContent = topic;
+            updateMarkCompleteBtn();
+            els.modal.classList.remove('hidden');
+            switchTab('concept');
+        };
+
+        window.switchTab = (tab) => {
+            // UI Update
+            Object.values(els.tabs).forEach(t => t.classList.remove('bg-text-primary', 'text-bg-primary'));
+            els.tabs[tab].classList.add('bg-text-primary', 'text-bg-primary');
+            
+            renderTabContent(tab);
+        }
+
+        async function renderTabContent(tab) {
+            els.modalContent.innerHTML = ''; // Clear previous
+
+            // Chat Tab Handling (No Caching, Session Based)
+            if (tab === 'tutor') {
+                renderChatInterface();
                 return;
             }
 
-            modalContent.innerHTML = `<div class="text-center p-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500"></div><p class="mt-2 text-secondary">Generating content...</p></div>`;
+            // Standard Content Handling (Cached)
+            const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_${tab}`;
+            const cached = getCached(cacheKey);
+
+            if (cached) {
+                currentTopicCache[tab] = cached; // Sync memory
+                injectContent(tab, cached);
+                return;
+            }
+
+            // Generate
+            els.modalContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20"><div class="loader-block mb-4"></div><p class="font-mono text-sm">GENERATING MASTER CLASS...</p></div>`;
 
             try {
-                let prompt = '';
-                if (tabName === 'concept') {
-                    if (monacoEditorInstance) { monacoEditorInstance.dispose(); monacoEditorInstance = null; }
-                    prompt = `Explain the concept of "${currentTopic}" in ${currentTechnology} for a beginner. Use clear language, provide code examples in markdown format where applicable, and explain what each part of the code does.`;
-                    const concept = await fetchWithExponentialBackoff(prompt);
-                    currentTopicCache.concept = concept;
-                    renderContent(concept);
-                } else if (tabName === 'practice') {
-                    prompt = `Generate a beginner-level coding practice problem for "${currentTopic}" in ${currentTechnology}. The problem should test a core concept. Provide a JSON object with three keys: "problem" (a string describing the task), "hint" (a string with a helpful hint), and "solution" (a string containing the complete code solution).`;
-                    const practiceData = await fetchWithExponentialBackoff(prompt, true);
-                    currentTopicCache.practice = practiceData;
-                    renderIDE(practiceData);
-                } else if (tabName === 'quiz') {
-                    if (monacoEditorInstance) { monacoEditorInstance.dispose(); monacoEditorInstance = null; }
-                    prompt = `Generate a 15-question multiple-choice quiz for "${currentTopic}" in ${currentTechnology}. The questions should test fundamental and important concepts. Provide a JSON array of objects, where each object has "question" (string), "options" (an array of 4 strings), "answer" (a string that matches one of the options), and "explanation" (a detailed string explaining the correct answer).`;
-                    const quizData = await fetchWithExponentialBackoff(prompt, true);
-                    currentTopicCache.quiz = quizData;
-                    renderQuizContainer(quizData);
+                let prompt, data;
+                if (tab === 'concept') {
+                    prompt = `Write a comprehensive technical guide on "${currentTopic}" in ${currentTechnology}. 
+                    Target audience: Job-seeking developers. 
+                    Format: Markdown. 
+                    Include: Deep dive explanation, "Why it matters in interviews", Best Practices, and a complex code example.`;
+                    data = await fetchGemini(prompt);
+                } else if (tab === 'practice') {
+                    prompt = `Create a Senior-level coding challenge for ${currentTopic} in ${currentTechnology}. 
+                    JSON Format: { "problem": "Real-world scenario description", "hint": "Architectural tip", "solution": "Full code solution" }`;
+                    data = await fetchGemini(prompt, true);
+                } else if (tab === 'quiz') {
+                    prompt = `Generate 5 hard technical interview questions for ${currentTopic}. 
+                    JSON Format: Array of { "question": "", "options": ["", "", "", ""], "answer": "Exact string", "explanation": "" }`;
+                    data = await fetchGemini(prompt, true);
                 }
-            } catch (error) {
-                modalContent.innerHTML = `<div class="text-red-400">Failed to load content: ${error.message}</div>`;
-            }
-        }
-        
-        function showTechSelectionScreen() {
-            roadmapContainer.classList.add('hidden');
-            techSelection.classList.remove('hidden');
-        }
 
-        function handleCloseModal() {
-            contentModal.classList.add('hidden');
-            if (monacoEditorInstance) {
-                monacoEditorInstance.dispose();
-                monacoEditorInstance = null;
+                setCached(cacheKey, data);
+                currentTopicCache[tab] = data;
+                injectContent(tab, data);
+            } catch (e) {
+                els.modalContent.innerHTML = `<div class="text-center p-10 text-incorrect-color font-bold">GENERATION FAILED.<br><button onclick="switchTab('${tab}')" class="underline mt-2">RETRY</button></div>`;
             }
         }
 
-        // --- Initial Setup ---
-        function main() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
-            initializeFirebase();
-            renderTechSelection();
+        function injectContent(tab, data) {
+            els.modalContent.innerHTML = '';
+            
+            if (tab === 'concept') {
+                const div = document.createElement('div');
+                div.className = 'prose prose-invert max-w-none';
+                div.innerHTML = parseMarkdown(data);
+                els.modalContent.appendChild(div);
+            } 
+            else if (tab === 'practice') {
+                els.modalContent.innerHTML = `
+                    <div class="flex flex-col h-full min-h-[500px]">
+                        <div class="bg-secondary p-4 border border-themed mb-4">
+                            <h3 class="font-bold uppercase mb-2">The Challenge</h3>
+                            <p class="whitespace-pre-wrap">${data.problem}</p>
+                        </div>
+                        <div class="flex-grow border border-themed relative" style="min-height: 400px;">
+                            <div id="editor-container" class="absolute inset-0"></div>
+                        </div>
+                        <div class="mt-4 flex gap-4">
+                            <button onclick="document.getElementById('hint').classList.toggle('hidden')" class="btn-base px-4 py-2 text-xs font-bold uppercase">Hint</button>
+                            <button onclick="window.showSol()" class="btn-base px-4 py-2 text-xs font-bold uppercase bg-text-primary text-bg-primary">Solution</button>
+                        </div>
+                        <div id="hint" class="hidden mt-4 p-4 bg-tertiary text-xs font-mono border-l-2 border-text-primary">${data.hint}</div>
+                    </div>
+                `;
+                initMonaco();
+                window.showSol = () => monacoEditorInstance?.setValue(data.solution);
+            } 
+            else if (tab === 'quiz') {
+                quizState.questions = data;
+                quizState.currentQuestionIndex = 0;
+                quizState.score = 0;
+                renderQuiz();
+            }
         }
 
-        themeToggle.addEventListener('click', handleThemeToggle);
-        backButton.addEventListener('click', showTechSelectionScreen);
-        closeModalButton.addEventListener('click', handleCloseModal);
-        conceptTab.addEventListener('click', () => handleTabClick('concept'));
-        practiceTab.addEventListener('click', () => handleTabClick('practice'));
-        quizTab.addEventListener('click', () => handleTabClick('quiz'));
-        markCompleteBtn.addEventListener('click', handleMarkAsComplete);
+        // 4. Chat / AI Tutor Logic
+        function renderChatInterface() {
+            els.modalContent.innerHTML = `
+                <div class="flex flex-col h-full" style="height: 65vh;">
+                    <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-4 border border-themed bg-secondary">
+                        <div class="chat-msg chat-ai rounded-none border border-themed">
+                            <p class="font-bold mb-1">DEECODE TUTOR</p>
+                            <p>I am ready to help you master ${currentTopic}. Ask me anything about implementation, edge cases, or interview tricks.</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <input type="text" id="chat-input" class="flex-grow p-3 bg-primary border border-themed font-mono text-sm focus:outline-none focus:ring-2 focus:ring-text-primary" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') window.sendChat()">
+                        <button onclick="window.sendChat()" class="btn-base px-6 font-bold uppercase bg-text-primary text-bg-primary">Send</button>
+                    </div>
+                </div>
+            `;
+            // Restore history if needed, for now just fresh
+            chatHistory.forEach(msg => appendChatMsg(msg.role, msg.text));
+        }
+
+        window.sendChat = async () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            input.value = '';
+            appendChatMsg('user', text);
+            chatHistory.push({ role: 'user', parts: [{ text: text }] });
+
+            // Create placeholder
+            const historyDiv = document.getElementById('chat-history');
+            const loadingId = 'chat-loading-' + Date.now();
+            historyDiv.insertAdjacentHTML('beforeend', `
+                <div id="${loadingId}" class="chat-msg chat-ai font-mono text-xs animate-pulse">Thinking...</div>
+            `);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+
+            try {
+                // Contextual prompt
+                const prompt = `Context: Teaching ${currentTopic} in ${currentTechnology}. User asks: ${text}. Keep answer short and technical.`;
+                const reply = await fetchGemini(prompt);
+                
+                document.getElementById(loadingId).remove();
+                appendChatMsg('model', reply);
+                chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+            } catch (e) {
+                document.getElementById(loadingId).innerText = "Error connecting to tutor.";
+            }
+        };
+
+        function appendChatMsg(role, text) {
+            const div = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${role === 'user' ? 'chat-user ml-auto' : 'chat-ai mr-auto'}`;
+            msgDiv.innerHTML = role === 'model' ? parseMarkdown(text) : `<p>${text}</p>`;
+            div.appendChild(msgDiv);
+            div.scrollTop = div.scrollHeight;
+        }
+
+        // 5. Offline Export Logic (.html file generation)
+        window.exportTopicToHTML = async () => {
+            showLoader(true, "Packaging Content...");
+            
+            // Ensure we have data (load if not cached)
+            const conceptKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_concept`;
+            let concept = getCached(conceptKey);
+            if (!concept) {
+                // Fetch if missing
+                try {
+                     const prompt = `Write a comprehensive technical guide on "${currentTopic}" in ${currentTechnology}. Format: Markdown.`;
+                     concept = await fetchGemini(prompt);
+                     setCached(conceptKey, concept);
+                } catch(e) {
+                    showError("Cannot export: content not generated.");
+                    showLoader(false);
+                    return;
+                }
+            }
+
+            // Create HTML Blob
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DeeCode: ${currentTopic}</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+        h1 { border-bottom: 2px solid #000; padding-bottom: 10px; }
+        code { background: #f4f4f4; padding: 2px 5px; }
+        pre { background: #f4f4f4; padding: 15px; overflow-x: auto; border: 1px solid #ddd; }
+        .footer { margin-top: 50px; font-size: 0.8em; color: #888; border-top: 1px solid #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>${currentTechnology}: ${currentTopic}</h1>
+    <div class="content">
+        ${parseMarkdown(concept)}
+    </div>
+    <div class="footer">
+        Generated by DeeCode. Job Ready Mastery.
+    </div>
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `DeeCode_${currentTechnology}_${currentTopic.replace(/\s+/g, '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showLoader(false);
+        };
+
+        // --- Helpers ---
+        function updateMarkCompleteBtn() {
+            const list = progress[currentTechnology] || [];
+            if(list.includes(currentTopic)) {
+                els.markCompleteBtn.innerHTML = "<span>COMPLETED</span>";
+                els.markCompleteBtn.classList.add('bg-text-primary', 'text-bg-primary');
+                els.markCompleteBtn.disabled = true;
+            } else {
+                els.markCompleteBtn.innerHTML = "<span>MARK DONE</span>";
+                els.markCompleteBtn.classList.remove('bg-text-primary', 'text-bg-primary');
+                els.markCompleteBtn.disabled = false;
+            }
+        }
+
+        function updateProgress() {
+            const total = currentRoadmapData.length;
+            const done = (progress[currentTechnology] || []).length;
+            const pct = Math.round((done/total) * 100) || 0;
+            els.roadmapProgressBar.style.width = `${pct}%`;
+            els.progressText.innerText = `${pct}% MASTERY`;
+        }
+
+        function parseMarkdown(md) {
+            return md
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/gim, '<code>$1</code>')
+                .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
+                .replace(/^\- (.*$)/gim, '<ul><li>$1</li></ul>')
+                .replace(/\n/gim, '<br>');
+        }
+
+        // Quiz Logic
+        function renderQuiz() {
+            if(quizState.currentQuestionIndex >= quizState.questions.length) {
+                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="switchTab('quiz')" class="btn-base px-6 py-2 uppercase font-bold">Retry</button></div>`;
+                return;
+            }
+            const q = quizState.questions[quizState.currentQuestionIndex];
+            els.modalContent.innerHTML = `
+                <div class="max-w-2xl mx-auto py-6">
+                    <div class="mb-4 text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
+                    <h3 class="text-xl font-bold mb-6">${q.question}</h3>
+                    <div class="space-y-3">
+                        ${q.options.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-sm">${opt}</button>`).join('')}
+                    </div>
+                    <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary"></div>
+                    <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-text-primary text-bg-primary">NEXT</button>
+                </div>
+            `;
+        }
         
-        techSelection.addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-tech]');
-            if (button) loadRoadmap(button.dataset.tech);
-        });
+        window.checkAns = (btn, val) => {
+            const q = quizState.questions[quizState.currentQuestionIndex];
+            const isCorrect = val === q.answer;
+            if(isCorrect) quizState.score++;
+            
+            document.querySelectorAll('#modalContent button').forEach(b => b.disabled = true);
+            const feed = document.getElementById('q-feedback');
+            feed.innerHTML = `<p class="font-bold mb-1">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.explanation}</p>`;
+            feed.classList.remove('hidden');
+            feed.style.borderColor = isCorrect ? 'var(--text-primary)' : 'var(--incorrect-color)';
+            document.getElementById('q-next').classList.remove('hidden');
+        };
+        window.nextQ = () => { quizState.currentQuestionIndex++; renderQuiz(); };
+
+        // Monaco Init
+        function initMonaco() {
+            setTimeout(() => {
+                const c = document.getElementById('editor-container');
+                if(!c) return;
+                if(monacoEditorInstance) monacoEditorInstance.dispose();
+                require(['vs/editor/editor.main'], () => {
+                    monacoEditorInstance = monaco.editor.create(c, {
+                        value: '// Code here...',
+                        language: 'javascript',
+                        theme: document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs',
+                        minimap: { enabled: false },
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: 14
+                    });
+                });
+            }, 100);
+        }
+
+        // --- Event Listeners ---
+        els.tabs.concept.onclick = () => switchTab('concept');
+        els.tabs.practice.onclick = () => switchTab('practice');
+        els.tabs.quiz.onclick = () => switchTab('quiz');
+        els.tabs.tutor.onclick = () => switchTab('tutor');
+
+        document.getElementById('themeToggle').onclick = () => {
+            document.documentElement.classList.toggle('dark');
+            if(monacoEditorInstance) monaco.editor.setTheme(document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs');
+        };
+        document.getElementById('backButton').onclick = () => { els.roadmapContainer.classList.add('hidden'); els.techSelection.classList.remove('hidden'); };
+        document.getElementById('closeModal').onclick = () => els.modal.classList.add('hidden');
         
-        window.addEventListener('DOMContentLoaded', main);
-        
+        els.markCompleteBtn.onclick = () => {
+            if(!progress[currentTechnology]) progress[currentTechnology] = [];
+            progress[currentTechnology].push(currentTopic);
+            saveLocalProgress();
+            updateMarkCompleteBtn();
+            renderRoadmap(currentRoadmapData);
+        };
+
+        // --- Helpers ---
+        function showError(msg) { els.error.textContent = msg; els.error.classList.remove('hidden'); setTimeout(()=>els.error.classList.add('hidden'), 3000); }
+        function showLoader(show, text) { els.loaderText.textContent = text||"Loading..."; els.loader.classList.toggle('hidden', !show); }
+
+        // Start
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
+        init();
+
     </script>
 </body>
 </html>
-
-
-
