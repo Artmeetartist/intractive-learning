@@ -44,9 +44,9 @@
             --incorrect-color: #f87171;
 
             /* Beautiful Colors for Dark Mode */
-            --highlight-primary: #60a5fa; /* Blue-400 for Headers */
-            --highlight-secondary: #34d399; /* Emerald-400 for Emphasis */
-            --highlight-code: #a78bfa; /* Violet-400 for Code */
+            --highlight-primary: #38bdf8; /* Sky Blue for Headers */
+            --highlight-secondary: #34d399; /* Emerald for Emphasis */
+            --highlight-code: #c084fc; /* Purple for Code */
         }
 
         body {
@@ -246,7 +246,7 @@
 
     <script type="module">
         // --- Configuration ---
-        const apiKey = ''; 
+        const apiKey = ''; // Leave empty; user provided key will be used
         
         const subjectList = [
             "HTML", "CSS", "JavaScript", "TypeScript", "React", "Redux", "Node.js", "Express.js", 
@@ -299,49 +299,6 @@
             }
         };
 
-        // --- Local Storage Helpers ---
-        function loadLocalData() {
-            try {
-                const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
-                if (savedProgress) progress = JSON.parse(savedProgress);
-                
-                const savedBank = localStorage.getItem(STORAGE_KEYS.QUESTION_BANK);
-                if (savedBank) questionBank = JSON.parse(savedBank);
-            } catch (e) { console.error(e); }
-        }
-
-        function saveLocalProgress() {
-            try { localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress)); } catch (e) { }
-        }
-
-        function saveQuestionBank() {
-            try { localStorage.setItem(STORAGE_KEYS.QUESTION_BANK, JSON.stringify(questionBank)); } catch (e) { console.warn('Storage full'); }
-        }
-
-        function getCached(key) {
-            try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
-        }
-
-        function setCached(key, data) {
-            try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Storage full'); }
-        }
-
-        window.clearData = () => {
-            if(confirm("RESET DEECODE?\nThis will wipe all progress, question banks, and downloaded roadmaps.")) {
-                localStorage.clear();
-                window.location.reload();
-            }
-        };
-
-        window.setApiKey = () => {
-            const key = prompt("Enter your Gemini API Key (Required for standalone use):", userApiKey);
-            if (key !== null) {
-                userApiKey = key.trim();
-                localStorage.setItem('deecode_api_key', userApiKey);
-                if(userApiKey) alert("API Key saved. You can now use the app.");
-            }
-        };
-
         // --- API Interaction ---
         async function fetchGemini(prompt, isJson = false) {
             const keyToUse = apiKey || userApiKey;
@@ -354,17 +311,20 @@
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse || userApiKey}`;
             
-            const systemInstruction = {
-                role: "user",
-                parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to explain complex technical concepts in simple, easy-to-understand terms while maintaining industry standards. Use analogies, clear examples, and highlight tips for fast learning. Use 'I' when teaching." }]
-            };
-
             const payload = { 
+                systemInstruction: {
+                    parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to explain complex technical concepts in simple, easy-to-understand terms while maintaining industry standards. Use analogies, clear examples, and highlight tips for fast learning. Use 'I' when teaching." }]
+                },
                 contents: [
-                    systemInstruction,
                     { role: "user", parts: [{ text: prompt }] }
                 ],
-                generationConfig: isJson ? { responseMimeType: "application/json" } : {} 
+                generationConfig: isJson ? { responseMimeType: "application/json" } : {},
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                ]
             };
 
             try {
@@ -403,7 +363,7 @@
             `).join('');
         }
 
-        window.loadRoadmap = async (tech) => {
+        async function loadRoadmap(tech) {
             currentTechnology = tech;
             els.techSelection.classList.add('hidden');
             els.roadmapContainer.classList.remove('hidden');
@@ -447,14 +407,13 @@
                     showLoader(false);
                 }
             }
-        };
+        }
 
         function renderRoadmap(data) {
             currentRoadmapData = data;
             els.roadmapContent.innerHTML = '';
             const completedList = progress[currentTechnology] || [];
 
-            // Draw line (hidden on mobile for cleaner look)
             const line = document.createElement('div');
             line.className = "absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border-color transform md:-translate-x-1/2 z-0 hidden md:block";
             els.roadmapContent.appendChild(line);
@@ -467,20 +426,19 @@
                 item.className = `relative w-full mb-6 md:mb-12 flex flex-col md:flex-row ${isRight ? 'md:justify-start' : 'md:justify-end'} justify-end md:pl-0 fade-in`;
                 item.style.animationDelay = `${idx * 0.05}s`;
 
+                // Safe escape for onclick
+                const escapedTitle = topic.title.replace(/'/g, "\\'");
+
                 item.innerHTML = `
-                    <!-- Center Node (Desktop) -->
                     <div class="hidden md:block absolute left-1/2 w-4 h-4 bg-bg-primary border-2 border-border-color transform -translate-x-1/2 mt-6 z-10 ${isCompleted ? 'bg-highlight-secondary border-highlight-secondary' : ''}"></div>
                     
-                    <!-- Content Card -->
                     <div class="w-full md:w-[45%] btn-base bg-bg-primary p-4 md:p-6 relative ${isRight ? 'md:mr-8' : 'md:ml-8'} rounded-xl hover:border-highlight-primary group">
-                        <button onclick="window.openTopic('${topic.title}')" class="w-full text-left">
+                        <button onclick="window.openTopic('${escapedTitle}')" class="w-full text-left">
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="text-base md:text-lg font-bold uppercase leading-tight pr-2 group-hover:text-highlight-primary transition-colors">${topic.title}</h3>
                                 ${isCompleted ? '<span class="text-[10px] bg-highlight-secondary text-bg-primary px-2 py-0.5 rounded-full font-bold flex-shrink-0">DONE</span>' : ''}
                             </div>
                             <p class="text-xs text-text-secondary font-mono mb-4">${topic.subtopics.length} Modules</p>
-                            
-                            <!-- Mini Subtopic List -->
                             <div class="space-y-1 hidden md:block">
                                 ${topic.subtopics.slice(0, 3).map(sub => `
                                     <div class="flex items-center gap-2 text-xs text-text-secondary">
@@ -498,7 +456,7 @@
             updateProgress();
         }
 
-        window.openTopic = (topic) => {
+        function openTopic(topic) {
             currentTopic = topic;
             currentTopicCache = {}; 
             chatHistory = []; 
@@ -507,17 +465,13 @@
             els.modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden'; 
             switchTab('concept');
-        };
+        }
 
-        window.switchTab = (tab) => {
+        function switchTab(tab) {
             Object.values(els.tabs).forEach(t => t.classList.remove('bg-text-primary', 'text-bg-primary', 'bg-highlight-primary', 'text-white'));
             els.tabs[tab].classList.add('bg-highlight-primary', 'text-white');
             renderTabContent(tab);
         }
-
-        window.forceGenerate = (tab) => {
-            renderTabContent(tab, true);
-        };
 
         async function renderTabContent(tab, forceRefresh = false) {
             els.modalContent.innerHTML = ''; 
@@ -575,6 +529,80 @@
                 console.error(e);
                 els.modalContent.innerHTML = `<div class="text-center p-10 text-incorrect-color font-bold">GENERATION FAILED (Check API/Network).<br><button onclick="window.forceGenerate('${tab}')" class="underline mt-2">RETRY</button></div>`;
             }
+        }
+
+        function injectContent(tab, data) {
+            els.modalContent.innerHTML = '';
+            
+            if (tab === 'concept') {
+                const div = document.createElement('div');
+                div.className = 'prose prose-invert max-w-none';
+                div.innerHTML = parseMarkdown(data);
+                els.modalContent.appendChild(div);
+            } 
+            else if (tab === 'practice') {
+                els.modalContent.innerHTML = `
+                    <div class="flex flex-col h-full min-h-[500px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold uppercase text-sm md:text-base text-highlight-primary">The Challenge</h3>
+                            <button onclick="window.forceGenerate('practice')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
+                        </div>
+                        <div class="bg-secondary p-4 border border-themed mb-4 rounded-lg">
+                            <p class="whitespace-pre-wrap">${data.problem}</p>
+                        </div>
+                        <div class="flex-grow border border-themed relative rounded-lg overflow-hidden" style="min-height: 300px;">
+                            <div id="editor-container" class="absolute inset-0"></div>
+                        </div>
+                        <div class="mt-4 flex gap-4">
+                            <button onclick="document.getElementById('hint').classList.toggle('hidden')" class="btn-base px-4 py-2 text-xs font-bold uppercase rounded-md">Hint</button>
+                            <button onclick="window.showSol()" class="btn-base px-4 py-2 text-xs font-bold uppercase bg-highlight-primary text-white rounded-md border-highlight-primary">Solution</button>
+                        </div>
+                        <div id="hint" class="hidden mt-4 p-4 bg-tertiary text-xs font-mono border-l-4 border-highlight-secondary rounded-r-lg">${data.hint}</div>
+                    </div>
+                `;
+                initMonaco();
+                // Ensure solution is ready for showSol
+                if (data.solution) {
+                    if (!currentTopicCache.practice) currentTopicCache.practice = {};
+                    currentTopicCache.practice.solution = data.solution;
+                }
+                
+                // Set monaco content initially if desired, or just starter code
+                if(monacoEditorInstance) monacoEditorInstance.setValue("// Write your code here...");
+            } 
+            else if (tab === 'quiz') {
+                quizState.questions = data;
+                quizState.currentQuestionIndex = 0;
+                quizState.score = 0;
+                renderQuiz();
+            }
+        }
+
+        // --- Helper & State Functions ---
+
+        function loadLocalData() {
+            try {
+                const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+                if (savedProgress) progress = JSON.parse(savedProgress);
+                const savedBank = localStorage.getItem(STORAGE_KEYS.QUESTION_BANK);
+                if (savedBank) questionBank = JSON.parse(savedBank);
+            } catch (e) { console.error(e); }
+        }
+
+        function saveLocalProgress() {
+            try { localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress)); } catch (e) { }
+        }
+
+        function saveQuestionBank() {
+            try { localStorage.setItem(STORAGE_KEYS.QUESTION_BANK, JSON.stringify(questionBank)); } catch (e) { console.warn('Storage full'); }
+        }
+
+        function getCached(key) {
+            try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+        }
+
+        function setCached(key, data) {
+            try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.warn('Storage full'); }
         }
 
         function addToBank(type, data) {
@@ -639,52 +667,12 @@
             `;
         }
 
-        window.loadSavedPractice = (index) => {
+        function loadSavedPractice(index) {
              const data = questionBank[currentTechnology][currentTopic].practice[index];
              const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_practice`;
              setCached(cacheKey, data);
              currentTopicCache['practice'] = data;
              switchTab('practice');
-        };
-
-        function injectContent(tab, data) {
-            els.modalContent.innerHTML = '';
-            
-            if (tab === 'concept') {
-                const div = document.createElement('div');
-                div.className = 'prose prose-invert max-w-none';
-                div.innerHTML = parseMarkdown(data);
-                els.modalContent.appendChild(div);
-            } 
-            else if (tab === 'practice') {
-                els.modalContent.innerHTML = `
-                    <div class="flex flex-col h-full min-h-[500px]">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold uppercase text-sm md:text-base text-highlight-primary">The Challenge</h3>
-                            <button onclick="window.forceGenerate('practice')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
-                        </div>
-                        <div class="bg-secondary p-4 border border-themed mb-4 rounded-lg">
-                            <p class="whitespace-pre-wrap">${data.problem}</p>
-                        </div>
-                        <div class="flex-grow border border-themed relative rounded-lg overflow-hidden" style="min-height: 300px;">
-                            <div id="editor-container" class="absolute inset-0"></div>
-                        </div>
-                        <div class="mt-4 flex gap-4">
-                            <button onclick="document.getElementById('hint').classList.toggle('hidden')" class="btn-base px-4 py-2 text-xs font-bold uppercase rounded-md">Hint</button>
-                            <button onclick="window.showSol()" class="btn-base px-4 py-2 text-xs font-bold uppercase bg-highlight-primary text-white rounded-md border-highlight-primary">Solution</button>
-                        </div>
-                        <div id="hint" class="hidden mt-4 p-4 bg-tertiary text-xs font-mono border-l-4 border-highlight-secondary rounded-r-lg">${data.hint}</div>
-                    </div>
-                `;
-                initMonaco();
-                window.showSol = () => monacoEditorInstance?.setValue(data.solution);
-            } 
-            else if (tab === 'quiz') {
-                quizState.questions = data;
-                quizState.currentQuestionIndex = 0;
-                quizState.score = 0;
-                renderQuiz();
-            }
         }
 
         function renderChatInterface() {
@@ -705,7 +693,7 @@
             chatHistory.forEach(msg => appendChatMsg(msg.role, msg.text));
         }
 
-        window.sendChat = async () => {
+        async function sendChat() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
             if(!text) return;
@@ -731,10 +719,11 @@
             } catch (e) {
                 document.getElementById(loadingId).innerText = "Error connecting to tutor.";
             }
-        };
+        }
 
         function appendChatMsg(role, text) {
             const div = document.getElementById('chat-history');
+            if (!div) return;
             const msgDiv = document.createElement('div');
             msgDiv.className = `chat-msg ${role === 'user' ? 'chat-user ml-auto' : 'chat-ai mr-auto'}`;
             msgDiv.innerHTML = role === 'model' ? parseMarkdown(text) : `<p>${text}</p>`;
@@ -742,7 +731,71 @@
             div.scrollTop = div.scrollHeight;
         }
 
-        window.exportTopicToHTML = async () => {
+        function renderQuiz() {
+            if(quizState.currentQuestionIndex >= quizState.questions.length) {
+                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4 text-highlight-primary">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="window.forceGenerate('quiz')" class="btn-base px-6 py-2 uppercase font-bold mr-4 rounded-md">New Set</button><button onclick="window.restartQuiz()" class="btn-base px-6 py-2 uppercase font-bold rounded-md">Retry</button></div>`;
+                return;
+            }
+            const header = `
+                <div class="flex justify-between items-center mb-6">
+                    <div class="text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
+                    <button onclick="window.forceGenerate('quiz')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
+                </div>
+            `;
+            
+            const q = quizState.questions[quizState.currentQuestionIndex];
+            els.modalContent.innerHTML = `
+                <div class="max-w-2xl mx-auto py-6">
+                    ${header}
+                    <h3 class="text-base md:text-xl font-bold mb-6 text-highlight-primary">${q.q}</h3>
+                    <div class="space-y-3">
+                        ${q.o.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-3 md:p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-xs md:text-sm rounded-lg">${opt}</button>`).join('')}
+                    </div>
+                    <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary text-sm rounded-lg"></div>
+                    <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-highlight-primary text-white border-highlight-primary rounded-lg">NEXT</button>
+                </div>
+            `;
+        }
+
+        function checkAns(btn, val) {
+            const q = quizState.questions[quizState.currentQuestionIndex];
+            const isCorrect = val === q.a;
+            if(isCorrect) quizState.score++;
+            
+            document.querySelectorAll('#modalContent button:not(#q-next)').forEach(b => b.disabled = true);
+            const feed = document.getElementById('q-feedback');
+            feed.innerHTML = `<p class="font-bold mb-1" style="color: ${isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)'}">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.e}</p>`;
+            feed.classList.remove('hidden');
+            feed.style.borderColor = isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)';
+            document.getElementById('q-next').classList.remove('hidden');
+        }
+
+        function nextQ() { quizState.currentQuestionIndex++; renderQuiz(); }
+        function restartQuiz() { quizState.currentQuestionIndex = 0; quizState.score = 0; renderQuiz(); }
+
+        function showSol() {
+            if(currentTopicCache.practice && currentTopicCache.practice.solution && monacoEditorInstance) {
+                monacoEditorInstance.setValue(currentTopicCache.practice.solution);
+            }
+        }
+
+        function setApiKey() {
+            const key = prompt("Enter your Gemini API Key (Required for standalone use):", userApiKey);
+            if (key !== null) {
+                userApiKey = key.trim();
+                localStorage.setItem('deecode_api_key', userApiKey);
+                if(userApiKey) alert("API Key saved. You can now use the app.");
+            }
+        }
+
+        function clearData() {
+            if(confirm("RESET DEECODE?\nThis will wipe all progress, question banks, and downloaded roadmaps.")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        async function exportTopicToHTML() {
             showLoader(true, "Packaging Content...");
             const conceptKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_concept`;
             let concept = getCached(conceptKey);
@@ -794,7 +847,11 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showLoader(false);
-        };
+        }
+
+        function forceGenerate(tab) {
+            renderTabContent(tab, true);
+        }
 
         function updateMarkCompleteBtn() {
             const list = progress[currentTechnology] || [];
@@ -829,47 +886,6 @@
                 .replace(/\n/gim, '<br>');
         }
 
-        function renderQuiz() {
-            if(quizState.currentQuestionIndex >= quizState.questions.length) {
-                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4 text-highlight-primary">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="window.forceGenerate('quiz')" class="btn-base px-6 py-2 uppercase font-bold mr-4 rounded-md">New Set</button><button onclick="window.restartQuiz()" class="btn-base px-6 py-2 uppercase font-bold rounded-md">Retry</button></div>`;
-                return;
-            }
-            const header = `
-                <div class="flex justify-between items-center mb-6">
-                    <div class="text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
-                    <button onclick="window.forceGenerate('quiz')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
-                </div>
-            `;
-            
-            const q = quizState.questions[quizState.currentQuestionIndex];
-            els.modalContent.innerHTML = `
-                <div class="max-w-2xl mx-auto py-6">
-                    ${header}
-                    <h3 class="text-base md:text-xl font-bold mb-6 text-highlight-primary">${q.q}</h3>
-                    <div class="space-y-3">
-                        ${q.o.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-3 md:p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-xs md:text-sm rounded-lg">${opt}</button>`).join('')}
-                    </div>
-                    <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary text-sm rounded-lg"></div>
-                    <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-highlight-primary text-white border-highlight-primary rounded-lg">NEXT</button>
-                </div>
-            `;
-        }
-        
-        window.checkAns = (btn, val) => {
-            const q = quizState.questions[quizState.currentQuestionIndex];
-            const isCorrect = val === q.a;
-            if(isCorrect) quizState.score++;
-            
-            document.querySelectorAll('#modalContent button:not(#q-next)').forEach(b => b.disabled = true);
-            const feed = document.getElementById('q-feedback');
-            feed.innerHTML = `<p class="font-bold mb-1" style="color: ${isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)'}">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.e}</p>`;
-            feed.classList.remove('hidden');
-            feed.style.borderColor = isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)';
-            document.getElementById('q-next').classList.remove('hidden');
-        };
-        window.nextQ = () => { quizState.currentQuestionIndex++; renderQuiz(); };
-        window.restartQuiz = () => { quizState.currentQuestionIndex = 0; quizState.score = 0; renderQuiz(); };
-
         function initMonaco() {
             setTimeout(() => {
                 const c = document.getElementById('editor-container');
@@ -896,6 +912,31 @@
             }, 100);
         }
 
+        function showError(msg) { els.error.textContent = msg; els.error.classList.remove('hidden'); setTimeout(()=>els.error.classList.add('hidden'), 3000); }
+        function showLoader(show, text) { els.loaderText.textContent = text||"Loading..."; els.loader.classList.toggle('hidden', !show); }
+
+        // --- Expose to Window for HTML interaction ---
+        window.switchTab = switchTab;
+        window.openTopic = openTopic;
+        window.loadRoadmap = loadRoadmap;
+        window.forceGenerate = forceGenerate;
+        window.loadSavedPractice = loadSavedPractice;
+        window.setApiKey = setApiKey;
+        window.clearData = clearData;
+        window.exportTopicToHTML = exportTopicToHTML;
+        window.checkAns = checkAns;
+        window.nextQ = nextQ;
+        window.restartQuiz = restartQuiz;
+        window.showSol = showSol;
+        window.sendChat = sendChat;
+
+        // --- Event Listeners ---
+        els.tabs.concept.onclick = () => switchTab('concept');
+        els.tabs.practice.onclick = () => switchTab('practice');
+        els.tabs.quiz.onclick = () => switchTab('quiz');
+        els.tabs.bank.onclick = () => switchTab('bank');
+        els.tabs.tutor.onclick = () => switchTab('tutor');
+
         document.getElementById('themeToggle').onclick = () => {
             document.documentElement.classList.toggle('dark');
             if(monacoEditorInstance) monaco.editor.setTheme(document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs');
@@ -913,9 +954,6 @@
             updateMarkCompleteBtn();
             renderRoadmap(currentRoadmapData);
         };
-
-        function showError(msg) { els.error.textContent = msg; els.error.classList.remove('hidden'); setTimeout(()=>els.error.classList.add('hidden'), 3000); }
-        function showLoader(show, text) { els.loaderText.textContent = text||"Loading..."; els.loader.classList.toggle('hidden', !show); }
 
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
         init();
