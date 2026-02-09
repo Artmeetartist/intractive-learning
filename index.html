@@ -114,6 +114,7 @@
             </div>
             
             <div class="flex items-center gap-4">
+                <button onclick="window.setApiKey()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary" title="Configure Gemini API Key">Set API Key</button>
                 <button onclick="window.clearData()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary">Reset All Data</button>
                 <button id="themeToggle" class="btn-base p-3 rounded-none bg-primary text-primary">
                     <span id="theme-text" class="font-bold text-xs uppercase">Theme</span>
@@ -211,7 +212,7 @@
 
     <script type="module">
         // --- Configuration ---
-        const apiKey = ''; 
+        const apiKey = ''; // Leave empty; user provided key will be used
         
         // Comprehensive Subject List
         const subjectList = [
@@ -233,6 +234,7 @@
         let questionBank = {}; // { Technology: { Topic: { quiz: [], practice: [] } } }
         let currentRoadmapData = [];
         let chatHistory = [];
+        let userApiKey = localStorage.getItem('deecode_api_key') || '';
 
         // --- Storage Keys ---
         const STORAGE_KEYS = {
@@ -300,9 +302,27 @@
             }
         };
 
+        window.setApiKey = () => {
+            const key = prompt("Enter your Gemini API Key (Required for standalone use):", userApiKey);
+            if (key !== null) {
+                userApiKey = key.trim();
+                localStorage.setItem('deecode_api_key', userApiKey);
+                alert("API Key saved. You can now use the app.");
+            }
+        };
+
         // --- API Interaction ---
         async function fetchGemini(prompt, isJson = false) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const keyToUse = apiKey || userApiKey;
+            
+            if (!keyToUse) {
+                window.setApiKey();
+                if (!localStorage.getItem('deecode_api_key')) throw new Error("API Key missing");
+                // Reload key from storage
+                userApiKey = localStorage.getItem('deecode_api_key');
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse || userApiKey}`;
             
             // System instruction for consistent "Senior Engineer" persona
             const systemInstruction = {
@@ -320,7 +340,13 @@
 
             try {
                 const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                if (!res.ok) throw new Error("API Error");
+                if (!res.ok) {
+                    if (res.status === 400 || res.status === 403) {
+                         const confirmUpdate = confirm("Connection Failed: Invalid Key or Permission denied.\n\nWould you like to update your API Key?");
+                         if (confirmUpdate) window.setApiKey();
+                    }
+                    throw new Error(`API Error: ${res.status}`);
+                }
                 const data = await res.json();
                 let text = data.candidates[0].content.parts[0].text;
                 
@@ -389,7 +415,7 @@
                     setCached(cacheKey, data);
                     renderRoadmap(data);
                 } catch (err) {
-                    showError("Connection failed. Try again.");
+                    showError("Connection failed. Check API Key/Network.");
                     els.techSelection.classList.remove('hidden');
                     els.roadmapContainer.classList.add('hidden');
                 } finally {
