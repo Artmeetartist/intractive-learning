@@ -19,8 +19,8 @@
             --accent-primary: #000000; 
             --accent-secondary: #27272a;
             --border-color: #000000;
-            --correct-color: #000000; /* Black for correct in B&W theme */
-            --incorrect-color: #7f1d1d; /* Dark Red remains for error visibility */
+            --correct-color: #000000;
+            --incorrect-color: #7f1d1d;
             --font-mono: 'JetBrains Mono', monospace;
         }
 
@@ -114,7 +114,7 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <button onclick="window.clearData()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary">Reset</button>
+                <button onclick="window.clearData()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary">Reset All Data</button>
                 <button id="themeToggle" class="btn-base p-3 rounded-none bg-primary text-primary">
                     <span id="theme-text" class="font-bold text-xs uppercase">Theme</span>
                 </button>
@@ -158,7 +158,7 @@
         </main>
         
         <!-- Modal -->
-        <div id="contentModal" class="hidden fixed inset-0 bg-bg-primary/90 z-50 flex justify-center items-center p-0 md:p-6 backdrop-blur-sm">
+        <div id="contentModal" class="hidden fixed inset-0 bg-bg-primary/95 z-50 flex justify-center items-center p-0 md:p-6 backdrop-blur-sm">
             <div id="modal-container" class="bg-primary w-full max-w-6xl h-full md:h-[90vh] flex flex-col border-2 border-themed shadow-2xl relative">
                 
                 <!-- Modal Header -->
@@ -178,13 +178,16 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex border-b border-themed">
-                    <button id="conceptTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Concept</button>
-                    <button id="practiceTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Practice</button>
-                    <button id="quizTab" class="flex-1 py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Quiz</button>
-                    <button id="tutorTab" class="flex-1 py-4 text-sm font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2">
+                <div class="flex border-b border-themed overflow-x-auto">
+                    <button id="conceptTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Concept</button>
+                    <button id="practiceTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Practice</button>
+                    <button id="quizTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Quiz</button>
+                    <button id="bankTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors flex items-center justify-center gap-2">
+                         <span>Bank</span>
+                         <span class="text-[10px] border border-current px-1 rounded-full opacity-70">SAVED</span>
+                    </button>
+                    <button id="tutorTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2">
                         <span>AI Tutor</span>
-                        <span class="text-[10px] bg-text-primary text-bg-primary px-1 rounded">NEW</span>
                     </button>
                 </div>
 
@@ -227,6 +230,7 @@
         let currentTopicCache = {}; 
         let quizState = { questions: [], currentQuestionIndex: 0, score: 0 };
         let progress = {};
+        let questionBank = {}; // { Technology: { Topic: { quiz: [], practice: [] } } }
         let currentRoadmapData = [];
         let chatHistory = [];
 
@@ -234,7 +238,8 @@
         const STORAGE_KEYS = {
             PROGRESS: 'deecode_progress',
             ROADMAP_PREFIX: 'deecode_map_',
-            CONTENT_PREFIX: 'deecode_content_'
+            CONTENT_PREFIX: 'deecode_content_',
+            QUESTION_BANK: 'deecode_bank'
         };
 
         // --- DOM Elements ---
@@ -256,6 +261,7 @@
                 concept: document.getElementById('conceptTab'),
                 practice: document.getElementById('practiceTab'),
                 quiz: document.getElementById('quizTab'),
+                bank: document.getElementById('bankTab'),
                 tutor: document.getElementById('tutorTab')
             }
         };
@@ -265,11 +271,18 @@
             try {
                 const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
                 if (savedProgress) progress = JSON.parse(savedProgress);
+                
+                const savedBank = localStorage.getItem(STORAGE_KEYS.QUESTION_BANK);
+                if (savedBank) questionBank = JSON.parse(savedBank);
             } catch (e) { console.error(e); }
         }
 
         function saveLocalProgress() {
             try { localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress)); } catch (e) { }
+        }
+
+        function saveQuestionBank() {
+            try { localStorage.setItem(STORAGE_KEYS.QUESTION_BANK, JSON.stringify(questionBank)); } catch (e) { console.warn('Storage full'); }
         }
 
         function getCached(key) {
@@ -281,7 +294,7 @@
         }
 
         window.clearData = () => {
-            if(confirm("RESET DEECODE?\nThis will wipe all progress and downloaded roadmaps.")) {
+            if(confirm("RESET DEECODE?\nThis will wipe all progress, question banks, and downloaded roadmaps.")) {
                 localStorage.clear();
                 window.location.reload();
             }
@@ -294,7 +307,7 @@
             // System instruction for consistent "Senior Engineer" persona
             const systemInstruction = {
                 role: "user",
-                parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to provide job-ready, industry-standard, comprehensive technical knowledge. Be concise, authoritative, and practical. Use 'I' when teaching." }]
+                parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to explain complex technical concepts in simple, easy-to-understand terms while maintaining industry standards. Use analogies, clear examples, and highlight tips for fast learning. Use 'I' when teaching." }]
             };
 
             const payload = { 
@@ -309,8 +322,14 @@
                 const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 if (!res.ok) throw new Error("API Error");
                 const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text;
-                return isJson ? JSON.parse(text) : text;
+                let text = data.candidates[0].content.parts[0].text;
+                
+                if (isJson) {
+                    // Sanitize markdown code blocks if present
+                    text = text.replace(/```json\n?|```/g, '').trim();
+                    return JSON.parse(text);
+                }
+                return text;
             } catch (e) {
                 console.error(e);
                 throw e;
@@ -346,9 +365,22 @@
             } else {
                 showLoader(true, `Architecting ${tech} Path...`);
                 try {
-                    const prompt = `Generate a highly detailed, job-ready learning roadmap for ${tech}. 
-                    Return ONLY a JSON array of objects. Each object: { "title": "Main Topic", "subtopics": ["Subtopic 1", "Subtopic 2", ...] }. 
-                    Include advanced concepts, best practices, and interview-critical topics.`;
+                    // UPDATED PROMPT: "Zero to Hero" / roadmap.sh style comprehensive structure
+                    const prompt = `Create the world's most comprehensive 'Zero to Hero' technical roadmap for ${tech}.
+                    Structure the content chronologically: Beginner -> Intermediate -> Advanced -> Expert -> Legacy/Internal patterns.
+                    
+                    Break down into at least 15-20 discrete Modules.
+                    For each module, provide an exhaustive list of subtopics covering:
+                    - Exact syntax, semantics, and memory models
+                    - Internal engine/compiler details (how it works under the hood)
+                    - Standard library deep-dives
+                    - Best practices, design patterns, and anti-patterns
+                    - Tooling, ecosystem, and deployment
+                    
+                    Return ONLY a valid JSON array of objects: 
+                    [{ "title": "1. [Module Name]", "subtopics": ["Detailed Concept 1", "Detailed Concept 2", ...] }]
+                    
+                    Ensure the subtopics are granular (e.g. not just "Loops", but "Loop unrolling", "Performance of for vs map").`;
                     
                     const data = await fetchGemini(prompt, true);
                     setCached(cacheKey, data);
@@ -431,12 +463,21 @@
             renderTabContent(tab);
         }
 
-        async function renderTabContent(tab) {
-            els.modalContent.innerHTML = ''; // Clear previous
+        window.forceGenerate = (tab) => {
+            // Bypass cache and force API call
+            renderTabContent(tab, true);
+        };
 
-            // Chat Tab Handling (No Caching, Session Based)
+        async function renderTabContent(tab, forceRefresh = false) {
+            els.modalContent.innerHTML = ''; 
+
+            // Special Tab Handling
             if (tab === 'tutor') {
                 renderChatInterface();
+                return;
+            }
+            if (tab === 'bank') {
+                renderQuestionBank();
                 return;
             }
 
@@ -444,40 +485,128 @@
             const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_${tab}`;
             const cached = getCached(cacheKey);
 
-            if (cached) {
-                currentTopicCache[tab] = cached; // Sync memory
+            if (cached && !forceRefresh) {
+                currentTopicCache[tab] = cached; 
                 injectContent(tab, cached);
                 return;
             }
 
             // Generate
-            els.modalContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20"><div class="loader-block mb-4"></div><p class="font-mono text-sm">GENERATING MASTER CLASS...</p></div>`;
+            els.modalContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20"><div class="loader-block mb-4"></div><p class="font-mono text-sm">GENERATING ${tab === 'quiz' ? '20 SCENARIO QUESTIONS' : 'UNIQUE CHALLENGE'}...</p></div>`;
 
             try {
                 let prompt, data;
                 if (tab === 'concept') {
-                    prompt = `Write a comprehensive technical guide on "${currentTopic}" in ${currentTechnology}. 
-                    Target audience: Job-seeking developers. 
-                    Format: Markdown. 
-                    Include: Deep dive explanation, "Why it matters in interviews", Best Practices, and a complex code example.`;
+                    prompt = `Explain "${currentTopic}" in ${currentTechnology} clearly and comprehensively.
+                    Structure your response as follows:
+                    1. **The Simple Explanation**: Easy-to-understand definition using real-world analogies.
+                    2. **Deep Dive & Examples**: Technical explanation with clear, well-commented code examples.
+                    3. **Important Highlights**: Bullet points of critical concepts to remember.
+                    4. **Pro Tips & Tricks**: Shortcuts, common pitfalls, and guides to learn this fast.
+                    5. **Interview Focus**: Why this matters for your job search.
+                    Format: Markdown. Use bold text for emphasis.`;
                     data = await fetchGemini(prompt);
                 } else if (tab === 'practice') {
-                    prompt = `Create a Senior-level coding challenge for ${currentTopic} in ${currentTechnology}. 
-                    JSON Format: { "problem": "Real-world scenario description", "hint": "Architectural tip", "solution": "Full code solution" }`;
+                    prompt = `Create a unique, Senior-level coding challenge for ${currentTopic} in ${currentTechnology}. 
+                    Focus on real-world system design or optimization. 
+                    JSON Format: { "problem": "Detailed real-world scenario description", "hint": "Architectural tip", "solution": "Full code solution" }`;
                     data = await fetchGemini(prompt, true);
+                    
+                    // Add to Bank
+                    addToBank('practice', data);
                 } else if (tab === 'quiz') {
-                    prompt = `Generate 5 hard technical interview questions for ${currentTopic}. 
-                    JSON Format: Array of { "question": "", "options": ["", "", "", ""], "answer": "Exact string", "explanation": "" }`;
+                    prompt = `Generate 20 distinct, conceptual, and scenario-based multiple-choice questions for ${currentTopic} in ${currentTechnology}. 
+                    Focus on edge cases, production issues, and advanced patterns. 
+                    JSON Format: Array of { "q": "Question text", "o": ["A", "B", "C", "D"], "a": "Exact answer string", "e": "Explanation" }`;
                     data = await fetchGemini(prompt, true);
+                    
+                    // Add to Bank
+                    addToBank('quiz', data);
                 }
 
                 setCached(cacheKey, data);
                 currentTopicCache[tab] = data;
                 injectContent(tab, data);
             } catch (e) {
-                els.modalContent.innerHTML = `<div class="text-center p-10 text-incorrect-color font-bold">GENERATION FAILED.<br><button onclick="switchTab('${tab}')" class="underline mt-2">RETRY</button></div>`;
+                console.error(e);
+                els.modalContent.innerHTML = `<div class="text-center p-10 text-incorrect-color font-bold">GENERATION FAILED (Check API/Network).<br><button onclick="window.forceGenerate('${tab}')" class="underline mt-2">RETRY</button></div>`;
             }
         }
+
+        // --- Question Bank Logic ---
+        function addToBank(type, data) {
+            // Ensure structure exists
+            if (!questionBank[currentTechnology]) questionBank[currentTechnology] = {};
+            if (!questionBank[currentTechnology][currentTopic]) questionBank[currentTechnology][currentTopic] = { quiz: [], practice: [] };
+
+            if (type === 'quiz') {
+                // Flatten array if necessary and append
+                const questions = Array.isArray(data) ? data : [data];
+                questionBank[currentTechnology][currentTopic]['quiz'].push(...questions);
+            } else if (type === 'practice') {
+                questionBank[currentTechnology][currentTopic]['practice'].push(data);
+            }
+            saveQuestionBank();
+        }
+
+        function renderQuestionBank() {
+            const bank = questionBank[currentTechnology]?.[currentTopic];
+            
+            if (!bank || (!bank.quiz.length && !bank.practice.length)) {
+                els.modalContent.innerHTML = `<div class="text-center py-20 opacity-50 font-mono">NO SAVED QUESTIONS YET.<br>GENERATE CONTENT IN PRACTICE OR QUIZ TABS.</div>`;
+                return;
+            }
+
+            const quizCount = bank.quiz.length;
+            const practiceCount = bank.practice.length;
+
+            els.modalContent.innerHTML = `
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <div class="border-b border-themed pb-4 mb-4">
+                        <h2 class="text-2xl font-bold uppercase">Topic Vault</h2>
+                        <p class="text-xs font-mono opacity-70">TOTAL SAVED: ${quizCount} QUESTIONS | ${practiceCount} CHALLENGES</p>
+                    </div>
+
+                    ${practiceCount > 0 ? `
+                        <div>
+                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed">CODING CHALLENGES</h3>
+                            <div class="space-y-4">
+                                ${bank.practice.map((p, i) => `
+                                    <div class="border border-themed p-4 hover:bg-bg-secondary transition-colors cursor-pointer" onclick="window.loadSavedPractice(${i})">
+                                        <div class="font-bold text-sm mb-1">CHALLENGE #${i+1}</div>
+                                        <div class="text-xs opacity-70 line-clamp-2">${p.problem.substring(0, 150)}...</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${quizCount > 0 ? `
+                        <div>
+                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed">QUIZ QUESTIONS</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${bank.quiz.map((q, i) => `
+                                    <div class="border border-themed p-3 text-xs">
+                                        <div class="font-bold mb-1">Q${i+1}: ${q.q}</div>
+                                        <div class="opacity-70 mt-1">Ans: ${q.a}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        window.loadSavedPractice = (index) => {
+             const data = questionBank[currentTechnology][currentTopic].practice[index];
+             // Cache this as the current practice to prevent switchTab from loading a different cached version
+             const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_practice`;
+             setCached(cacheKey, data);
+             currentTopicCache['practice'] = data;
+             // Switch to practice tab and inject this data
+             switchTab('practice');
+        };
 
         function injectContent(tab, data) {
             els.modalContent.innerHTML = '';
@@ -491,8 +620,11 @@
             else if (tab === 'practice') {
                 els.modalContent.innerHTML = `
                     <div class="flex flex-col h-full min-h-[500px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold uppercase">The Challenge</h3>
+                            <button onclick="window.forceGenerate('practice')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors">Generate New</button>
+                        </div>
                         <div class="bg-secondary p-4 border border-themed mb-4">
-                            <h3 class="font-bold uppercase mb-2">The Challenge</h3>
                             <p class="whitespace-pre-wrap">${data.problem}</p>
                         </div>
                         <div class="flex-grow border border-themed relative" style="min-height: 400px;">
@@ -670,16 +802,24 @@
         // Quiz Logic
         function renderQuiz() {
             if(quizState.currentQuestionIndex >= quizState.questions.length) {
-                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="switchTab('quiz')" class="btn-base px-6 py-2 uppercase font-bold">Retry</button></div>`;
+                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="window.forceGenerate('quiz')" class="btn-base px-6 py-2 uppercase font-bold mr-4">New Set</button><button onclick="window.restartQuiz()" class="btn-base px-6 py-2 uppercase font-bold">Retry</button></div>`;
                 return;
             }
+            // Add generate new button to quiz view
+            const header = `
+                <div class="flex justify-between items-center mb-6">
+                    <div class="text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
+                    <button onclick="window.forceGenerate('quiz')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors">Generate New</button>
+                </div>
+            `;
+            
             const q = quizState.questions[quizState.currentQuestionIndex];
             els.modalContent.innerHTML = `
                 <div class="max-w-2xl mx-auto py-6">
-                    <div class="mb-4 text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
-                    <h3 class="text-xl font-bold mb-6">${q.question}</h3>
+                    ${header}
+                    <h3 class="text-xl font-bold mb-6">${q.q}</h3>
                     <div class="space-y-3">
-                        ${q.options.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-sm">${opt}</button>`).join('')}
+                        ${q.o.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-sm">${opt}</button>`).join('')}
                     </div>
                     <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary"></div>
                     <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-text-primary text-bg-primary">NEXT</button>
@@ -689,34 +829,44 @@
         
         window.checkAns = (btn, val) => {
             const q = quizState.questions[quizState.currentQuestionIndex];
-            const isCorrect = val === q.answer;
+            const isCorrect = val === q.a;
             if(isCorrect) quizState.score++;
             
-            document.querySelectorAll('#modalContent button').forEach(b => b.disabled = true);
+            document.querySelectorAll('#modalContent button:not(#q-next)').forEach(b => b.disabled = true);
             const feed = document.getElementById('q-feedback');
-            feed.innerHTML = `<p class="font-bold mb-1">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.explanation}</p>`;
+            feed.innerHTML = `<p class="font-bold mb-1">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.e}</p>`;
             feed.classList.remove('hidden');
             feed.style.borderColor = isCorrect ? 'var(--text-primary)' : 'var(--incorrect-color)';
             document.getElementById('q-next').classList.remove('hidden');
         };
         window.nextQ = () => { quizState.currentQuestionIndex++; renderQuiz(); };
+        window.restartQuiz = () => { quizState.currentQuestionIndex = 0; quizState.score = 0; renderQuiz(); };
 
         // Monaco Init
         function initMonaco() {
             setTimeout(() => {
                 const c = document.getElementById('editor-container');
                 if(!c) return;
-                if(monacoEditorInstance) monacoEditorInstance.dispose();
-                require(['vs/editor/editor.main'], () => {
-                    monacoEditorInstance = monaco.editor.create(c, {
-                        value: '// Code here...',
-                        language: 'javascript',
-                        theme: document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs',
-                        minimap: { enabled: false },
-                        fontFamily: 'JetBrains Mono',
-                        fontSize: 14
+                
+                // Safe dispose
+                if(monacoEditorInstance) {
+                    try { monacoEditorInstance.dispose(); } catch(e) {}
+                    monacoEditorInstance = null;
+                }
+
+                if (typeof require !== 'undefined') {
+                    require(['vs/editor/editor.main'], () => {
+                        monacoEditorInstance = monaco.editor.create(c, {
+                            value: '// Code here...',
+                            language: 'javascript',
+                            theme: document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs',
+                            minimap: { enabled: false },
+                            fontFamily: 'JetBrains Mono',
+                            fontSize: 14,
+                            automaticLayout: true
+                        });
                     });
-                });
+                }
             }, 100);
         }
 
@@ -724,6 +874,7 @@
         els.tabs.concept.onclick = () => switchTab('concept');
         els.tabs.practice.onclick = () => switchTab('practice');
         els.tabs.quiz.onclick = () => switchTab('quiz');
+        els.tabs.bank.onclick = () => switchTab('bank');
         els.tabs.tutor.onclick = () => switchTab('tutor');
 
         document.getElementById('themeToggle').onclick = () => {
