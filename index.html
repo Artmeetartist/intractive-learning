@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DeeCode - Mastery Roadmap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -10,32 +10,43 @@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js"></script>
     <style>
         :root {
-            /* Light Mode (High Contrast B&W) */
+            /* Light Mode Palette */
             --bg-primary: #ffffff;
-            --bg-secondary: #f4f4f5; 
-            --bg-tertiary: #e4e4e7;
-            --text-primary: #000000;
-            --text-secondary: #52525b;
-            --accent-primary: #000000; 
-            --accent-secondary: #27272a;
-            --border-color: #000000;
-            --correct-color: #000000;
-            --incorrect-color: #7f1d1d;
+            --bg-secondary: #f8fafc; 
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-primary: #0f172a; 
+            --accent-secondary: #334155;
+            --border-color: #e2e8f0;
+            --correct-color: #16a34a;
+            --incorrect-color: #dc2626;
+            
+            /* Beautiful Colors for Light Mode */
+            --highlight-primary: #2563eb; /* Blue for Headers */
+            --highlight-secondary: #059669; /* Emerald for Emphasis/Bold */
+            --highlight-code: #7c3aed; /* Violet for inline code */
+            
             --font-mono: 'JetBrains Mono', monospace;
         }
 
         html.dark {
-            /* Dark Mode (High Contrast B&W) */
-            --bg-primary: #000000;
-            --bg-secondary: #121212;
-            --bg-tertiary: #27272a;
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
+            /* Dark Mode Palette */
+            --bg-primary: #000000; /* Pure Black OLED friendly */
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
             --accent-primary: #ffffff;
-            --accent-secondary: #d4d4d8;
-            --border-color: #ffffff;
-            --correct-color: #ffffff;
+            --accent-secondary: #cbd5e1;
+            --border-color: #333333;
+            --correct-color: #4ade80;
             --incorrect-color: #f87171;
+
+            /* Beautiful Colors for Dark Mode */
+            --highlight-primary: #60a5fa; /* Blue-400 for Headers */
+            --highlight-secondary: #34d399; /* Emerald-400 for Emphasis */
+            --highlight-code: #a78bfa; /* Violet-400 for Code */
         }
 
         body {
@@ -43,6 +54,16 @@
             background-color: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Scrollbar Hiding utility */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         /* Utility Classes using Vars */
@@ -59,6 +80,7 @@
         .btn-base {
             border: 1px solid var(--border-color);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         .btn-base:hover {
             transform: translateY(-2px);
@@ -82,139 +104,150 @@
 
         /* Loader */
         .loader-block {
-            width: 20px; height: 20px; background-color: var(--accent-primary);
+            width: 20px; height: 20px; background-color: var(--highlight-primary);
             animation: flip 1s infinite;
         }
         @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(180deg); } 100% { transform: rotateX(180deg) rotateY(180deg); } }
 
-        /* Markdown Styles */
-        .prose h1, .prose h2, .prose h3 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 700; color: var(--text-primary); }
-        .prose h1 { font-size: 2em; border-bottom: 2px solid var(--border-color); padding-bottom: 0.2em; }
-        .prose h2 { font-size: 1.5em; }
-        .prose p { margin-bottom: 1em; line-height: 1.6; }
-        .prose code { background-color: var(--bg-tertiary); padding: 0.2em 0.4em; font-family: var(--font-mono); font-size: 0.9em; }
-        .prose pre { background-color: var(--bg-secondary); padding: 1em; overflow-x: auto; margin-bottom: 1em; border: 1px solid var(--border-color); }
-        .prose blockquote { border-left: 4px solid var(--text-primary); padding-left: 1em; font-style: italic; }
+        /* Markdown Content Styles - Enhanced with Colors */
+        .prose h1, .prose h2, .prose h3, .prose h4 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 700; color: var(--highlight-primary); }
+        .prose h1 { font-size: 1.8em; border-bottom: 2px solid var(--border-color); padding-bottom: 0.2em; letter-spacing: -0.02em; }
+        .prose h2 { font-size: 1.4em; }
+        .prose h3 { font-size: 1.2em; color: var(--text-primary); }
+        .prose p { margin-bottom: 1em; line-height: 1.7; font-size: 1em; color: var(--text-secondary); }
+        
+        /* Highlight Important Concepts */
+        .prose strong { color: var(--highlight-secondary); font-weight: 700; }
+        
+        .prose code { background-color: var(--bg-tertiary); color: var(--highlight-code); padding: 0.2em 0.4em; font-family: var(--font-mono); font-size: 0.9em; border-radius: 4px; border: 1px solid var(--border-color); }
+        .prose pre { background-color: var(--bg-secondary); padding: 1.2em; overflow-x: auto; margin-bottom: 1.5em; border: 1px solid var(--border-color); border-radius: 8px; }
+        .prose pre code { background-color: transparent; border: none; padding: 0; color: var(--text-primary); }
+        
+        .prose blockquote { border-left: 4px solid var(--highlight-primary); padding-left: 1em; margin-left: 0; font-style: italic; background-color: var(--bg-secondary); padding: 1em; border-radius: 0 8px 8px 0; }
+        .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.5rem; marker: var(--highlight-primary); }
+        .prose ul { list-style-type: disc; }
+        .prose ol { list-style-type: decimal; }
 
         /* Chat Styles */
-        .chat-msg { max-width: 80%; padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); }
-        .chat-user { align-self: flex-end; background-color: var(--bg-tertiary); }
-        .chat-ai { align-self: flex-start; background-color: var(--bg-primary); }
+        .chat-msg { max-width: 85%; padding: 1rem; margin-bottom: 0.8rem; border: 1px solid var(--border-color); font-size: 0.95rem; border-radius: 8px; }
+        .chat-user { align-self: flex-end; background-color: var(--bg-tertiary); color: var(--text-primary); border-bottom-right-radius: 0; }
+        .chat-ai { align-self: flex-start; background-color: var(--bg-secondary); border-left: 3px solid var(--highlight-primary); border-bottom-left-radius: 0; }
     </style>
 </head>
 <body>
 
-    <div id="app" class="container mx-auto p-4 md:p-8">
+    <div id="app" class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col">
 
         <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-12 border-b-2 border-themed pb-6 gap-6">
-            <div class="flex flex-col">
-                <h1 class="text-5xl font-bold tracking-tighter">DeeCode</h1>
-                <p class="text-sm font-mono mt-2 bg-text-primary text-bg-primary inline-block px-2 py-1">MASTER THE CRAFT.</p>
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-12 border-b-2 border-themed pb-4 md:pb-6 gap-4 md:gap-6">
+            <div class="flex flex-col text-center md:text-left">
+                <h1 class="text-3xl md:text-5xl font-bold tracking-tighter text-accent">DeeCode</h1>
+                <p class="text-xs md:text-sm font-mono mt-2 bg-accent text-bg-primary inline-block px-2 py-1 mx-auto md:mx-0 font-bold">MASTER THE CRAFT.</p>
             </div>
             
-            <div class="flex items-center gap-4">
-                <button onclick="window.setApiKey()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary" title="Configure Gemini API Key">Set API Key</button>
-                <button onclick="window.clearData()" class="text-xs hover:underline font-mono uppercase tracking-widest text-secondary">Reset All Data</button>
-                <button id="themeToggle" class="btn-base p-3 rounded-none bg-primary text-primary">
-                    <span id="theme-text" class="font-bold text-xs uppercase">Theme</span>
+            <div class="flex items-center gap-3">
+                <button onclick="window.setApiKey()" class="btn-base p-2 bg-primary text-primary flex items-center gap-2 rounded-lg" title="Configure API Key">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span class="text-xs font-bold font-mono">API</span>
+                </button>
+                <button onclick="window.clearData()" class="btn-base p-2 bg-primary text-incorrect-color border-incorrect-color rounded-lg" title="Reset All Data">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+                <button id="themeToggle" class="btn-base p-2 bg-primary text-primary rounded-lg" title="Toggle Theme">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                 </button>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main id="mainContent" class="min-h-screen flex flex-col">
+        <main id="mainContent" class="flex-grow flex flex-col">
             
             <!-- Tech Selection -->
-            <div id="techSelection" class="flex-grow flex flex-col items-center fade-in">
-                <h2 class="text-2xl font-bold mb-8 text-center uppercase tracking-wide border-b border-themed pb-2">Select Your Path</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl pb-10">
+            <div id="techSelection" class="flex-grow flex flex-col items-center fade-in w-full">
+                <h2 class="text-xl md:text-2xl font-bold mb-6 text-center uppercase tracking-wide border-b border-themed pb-2 text-accent">Select Your Path</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl pb-10">
                     <!-- Tech buttons injected here -->
                 </div>
             </div>
 
             <!-- Roadmap Container -->
-            <div id="roadmapContainer" class="hidden flex flex-col h-full fade-in">
-                 <div class="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-themed pb-4">
-                    <div class="flex items-center gap-4">
-                        <button id="backButton" class="btn-base bg-primary font-bold py-2 px-6 text-sm uppercase">
+            <div id="roadmapContainer" class="hidden flex flex-col h-full fade-in w-full">
+                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 border-b border-themed pb-4">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <button id="backButton" class="btn-base bg-primary font-bold py-2 px-4 text-xs md:text-sm uppercase whitespace-nowrap rounded-lg hover:bg-secondary">
                             &larr; Back
                         </button>
-                        <div>
-                            <h2 id="currentRoadmapTitle" class="text-3xl font-bold uppercase"></h2>
-                        </div>
+                        <h2 id="currentRoadmapTitle" class="text-xl md:text-3xl font-bold uppercase truncate text-highlight-primary"></h2>
                     </div>
                     <div class="w-full md:w-1/3">
-                         <div class="flex justify-between text-xs font-mono mb-1">
+                         <div class="flex justify-between text-xs font-mono mb-1 text-secondary">
                              <span>PROGRESS</span>
                              <span id="progressText">0%</span>
                          </div>
-                        <div class="w-full border border-themed h-4 p-0.5">
-                            <div id="roadmapProgressBar" class="bg-text-primary h-full transition-all duration-500" style="width: 0%"></div>
+                        <div class="w-full border border-themed h-3 p-px rounded-full">
+                            <div id="roadmapProgressBar" class="bg-highlight-secondary h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
                         </div>
                     </div>
                  </div>
-                <div id="roadmapContent" class="pb-20 max-w-4xl mx-auto"></div>
+                <div id="roadmapContent" class="pb-20 max-w-4xl mx-auto w-full"></div>
             </div>
         </main>
         
-        <!-- Modal -->
-        <div id="contentModal" class="hidden fixed inset-0 bg-bg-primary/95 z-50 flex justify-center items-center p-0 md:p-6 backdrop-blur-sm">
-            <div id="modal-container" class="bg-primary w-full max-w-6xl h-full md:h-[90vh] flex flex-col border-2 border-themed shadow-2xl relative">
-                
-                <!-- Modal Header -->
-                <div class="flex justify-between items-center p-4 border-b border-themed bg-secondary">
-                    <h2 id="modalTitle" class="text-xl md:text-2xl font-bold truncate pr-4 uppercase tracking-tight"></h2>
-                    <div class="flex items-center gap-3">
-                        <button onclick="window.exportTopicToHTML()" class="btn-base flex items-center gap-2 bg-primary px-3 py-1 text-xs font-bold uppercase" title="Download Offline Copy">
-                            <span>Save .html</span>
-                        </button>
-                        <button id="markCompleteBtn" class="btn-base flex items-center gap-2 bg-primary px-3 py-1 text-xs font-bold uppercase">
-                            <span>Mark Done</span>
-                        </button>
-                        <button id="closeModal" class="hover:bg-text-primary hover:text-bg-primary p-1 transition-colors border border-transparent hover:border-themed">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
-                <div class="flex border-b border-themed overflow-x-auto">
-                    <button id="conceptTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Concept</button>
-                    <button id="practiceTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Practice</button>
-                    <button id="quizTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors">Quiz</button>
-                    <button id="bankTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors flex items-center justify-center gap-2">
-                         <span>Bank</span>
-                         <span class="text-[10px] border border-current px-1 rounded-full opacity-70">SAVED</span>
+        <!-- Full Screen Modal -->
+        <div id="contentModal" class="hidden fixed inset-0 bg-bg-primary z-50 flex flex-col animate-fade-in">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-4 border-b border-themed bg-secondary flex-shrink-0">
+                <h2 id="modalTitle" class="text-lg md:text-2xl font-bold truncate pr-4 uppercase tracking-tight text-highlight-primary"></h2>
+                <div class="flex items-center gap-2 md:gap-3">
+                    <button onclick="window.exportTopicToHTML()" class="btn-base p-2 bg-primary rounded-md" title="Download Offline Copy">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                     </button>
-                    <button id="tutorTab" class="flex-1 min-w-[100px] py-4 text-sm font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2">
-                        <span>AI Tutor</span>
+                    <button id="markCompleteBtn" class="btn-base flex items-center gap-2 bg-primary px-3 py-2 text-xs font-bold uppercase whitespace-nowrap rounded-md">
+                        <span>Mark Done</span>
+                    </button>
+                    <button id="closeModal" class="hover:text-incorrect-color p-2 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
+            </div>
 
-                <!-- Content Area -->
-                <div id="modalContent" class="p-6 overflow-y-auto flex-grow relative bg-primary font-mono text-sm leading-relaxed">
-                    <!-- Dynamic Content -->
-                </div>
+            <!-- Tabs -->
+            <div class="flex border-b border-themed overflow-x-auto flex-shrink-0 hide-scrollbar bg-primary">
+                <button id="conceptTab" class="flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors whitespace-nowrap">Concept</button>
+                <button id="practiceTab" class="flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors whitespace-nowrap">Practice</button>
+                <button id="quizTab" class="flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors whitespace-nowrap">Quiz</button>
+                <button id="bankTab" class="flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold uppercase border-r border-themed hover:bg-secondary transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                     <span>Bank</span>
+                     <span class="text-[10px] border border-current px-1 rounded-full opacity-70">SAVED</span>
+                </button>
+                <button id="tutorTab" class="flex-1 min-w-[100px] py-4 text-xs md:text-sm font-bold uppercase hover:bg-secondary transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                    <span>AI Tutor</span>
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div id="modalContent" class="p-4 md:p-8 overflow-y-auto flex-grow bg-primary font-mono text-sm leading-relaxed hide-scrollbar">
+                <!-- Dynamic Content -->
             </div>
         </div>
         
         <!-- Loading Overlay -->
         <div id="loader" class="fixed inset-0 bg-bg-primary/95 z-[60] flex flex-col justify-center items-center hidden">
              <div class="loader-block mb-6"></div>
-             <p id="loaderText" class="font-mono text-lg uppercase tracking-widest">Processing...</p>
+             <p id="loaderText" class="font-mono text-lg uppercase tracking-widest text-center px-4">Processing...</p>
         </div>
 
         <!-- Error Toast -->
-        <div id="errorMessage" class="hidden fixed bottom-5 right-5 max-w-sm bg-incorrect-color text-white px-6 py-4 border-2 border-black z-[70] font-bold shadow-xl"></div>
+        <div id="errorMessage" class="hidden fixed bottom-5 left-5 right-5 md:left-auto md:right-5 md:max-w-sm bg-incorrect-color text-white px-6 py-4 border-2 border-black z-[70] font-bold shadow-xl text-center md:text-left rounded-lg"></div>
 
     </div>
 
     <script type="module">
         // --- Configuration ---
-        const apiKey = ''; // Leave empty; user provided key will be used
+        const apiKey = ''; 
         
-        // Comprehensive Subject List
         const subjectList = [
             "HTML", "CSS", "JavaScript", "TypeScript", "React", "Redux", "Node.js", "Express.js", 
             "SQL", "MySQL", "MongoDB", "API", "System Design", "Interview Prep", "Python", 
@@ -231,12 +264,11 @@
         let currentTopicCache = {}; 
         let quizState = { questions: [], currentQuestionIndex: 0, score: 0 };
         let progress = {};
-        let questionBank = {}; // { Technology: { Topic: { quiz: [], practice: [] } } }
+        let questionBank = {}; 
         let currentRoadmapData = [];
         let chatHistory = [];
         let userApiKey = localStorage.getItem('deecode_api_key') || '';
 
-        // --- Storage Keys ---
         const STORAGE_KEYS = {
             PROGRESS: 'deecode_progress',
             ROADMAP_PREFIX: 'deecode_map_',
@@ -244,7 +276,6 @@
             QUESTION_BANK: 'deecode_bank'
         };
 
-        // --- DOM Elements ---
         const els = {
             techSelection: document.getElementById('techSelection'),
             roadmapContainer: document.getElementById('roadmapContainer'),
@@ -307,7 +338,7 @@
             if (key !== null) {
                 userApiKey = key.trim();
                 localStorage.setItem('deecode_api_key', userApiKey);
-                alert("API Key saved. You can now use the app.");
+                if(userApiKey) alert("API Key saved. You can now use the app.");
             }
         };
 
@@ -317,14 +348,12 @@
             
             if (!keyToUse) {
                 window.setApiKey();
-                if (!localStorage.getItem('deecode_api_key')) throw new Error("API Key missing");
-                // Reload key from storage
                 userApiKey = localStorage.getItem('deecode_api_key');
+                if (!userApiKey) throw new Error("API Key missing");
             }
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${keyToUse || userApiKey}`;
             
-            // System instruction for consistent "Senior Engineer" persona
             const systemInstruction = {
                 role: "user",
                 parts: [{ text: "You are DeeCode, a Senior Principal Engineer and mentor. Your goal is to explain complex technical concepts in simple, easy-to-understand terms while maintaining industry standards. Use analogies, clear examples, and highlight tips for fast learning. Use 'I' when teaching." }]
@@ -351,7 +380,6 @@
                 let text = data.candidates[0].content.parts[0].text;
                 
                 if (isJson) {
-                    // Sanitize markdown code blocks if present
                     text = text.replace(/```json\n?|```/g, '').trim();
                     return JSON.parse(text);
                 }
@@ -364,19 +392,17 @@
 
         // --- Core Application Logic ---
 
-        // 1. Initial Render
         function init() {
             loadLocalData();
             const grid = els.techSelection.querySelector('.grid');
             grid.innerHTML = subjectList.map(tech => `
-                <button onclick="window.loadRoadmap('${tech}')" class="btn-base group bg-secondary p-8 flex flex-col items-center justify-center gap-4 h-40 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-2 opacity-10 font-black text-6xl select-none group-hover:opacity-20 transition-opacity">${tech.substring(0,1)}</div>
-                    <h3 class="text-xl font-bold z-10 text-center uppercase tracking-wider">${tech}</h3>
+                <button onclick="window.loadRoadmap('${tech}')" class="btn-base group bg-secondary p-4 md:p-8 flex flex-col items-center justify-center gap-4 h-32 md:h-40 relative overflow-hidden rounded-xl hover:bg-tertiary">
+                    <div class="absolute top-0 right-0 p-2 opacity-10 font-black text-4xl md:text-6xl select-none group-hover:opacity-20 transition-opacity">${tech.substring(0,1)}</div>
+                    <h3 class="text-sm md:text-xl font-bold z-10 text-center uppercase tracking-wider">${tech}</h3>
                 </button>
             `).join('');
         }
 
-        // 2. Load Roadmap
         window.loadRoadmap = async (tech) => {
             currentTechnology = tech;
             els.techSelection.classList.add('hidden');
@@ -391,7 +417,6 @@
             } else {
                 showLoader(true, `Architecting ${tech} Path...`);
                 try {
-                    // UPDATED PROMPT: W3Schools style exhaustive syllabus
                     const prompt = `Generate an extremely detailed, exhaustive learning roadmap for ${tech}, modeled strictly after the comprehensive syllabus structure of w3schools.
                     It must be a "Zero to Hero" guide covering every single syntax element, core concept, and advanced feature.
 
@@ -429,9 +454,9 @@
             els.roadmapContent.innerHTML = '';
             const completedList = progress[currentTechnology] || [];
 
-            // Draw line
+            // Draw line (hidden on mobile for cleaner look)
             const line = document.createElement('div');
-            line.className = "absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border-color transform md:-translate-x-1/2 z-0";
+            line.className = "absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border-color transform md:-translate-x-1/2 z-0 hidden md:block";
             els.roadmapContent.appendChild(line);
 
             data.forEach((topic, idx) => {
@@ -439,27 +464,27 @@
                 const isRight = idx % 2 === 0;
                 
                 const item = document.createElement('div');
-                item.className = `relative w-full mb-12 flex ${isRight ? 'md:justify-start' : 'md:justify-end'} justify-end pl-12 md:pl-0 fade-in`;
+                item.className = `relative w-full mb-6 md:mb-12 flex flex-col md:flex-row ${isRight ? 'md:justify-start' : 'md:justify-end'} justify-end md:pl-0 fade-in`;
                 item.style.animationDelay = `${idx * 0.05}s`;
 
                 item.innerHTML = `
-                    <!-- Center Node -->
-                    <div class="absolute left-4 md:left-1/2 w-4 h-4 bg-bg-primary border-2 border-border-color transform -translate-x-1/2 mt-6 z-10 ${isCompleted ? 'bg-text-primary' : ''}"></div>
+                    <!-- Center Node (Desktop) -->
+                    <div class="hidden md:block absolute left-1/2 w-4 h-4 bg-bg-primary border-2 border-border-color transform -translate-x-1/2 mt-6 z-10 ${isCompleted ? 'bg-highlight-secondary border-highlight-secondary' : ''}"></div>
                     
                     <!-- Content Card -->
-                    <div class="w-full md:w-[45%] btn-base bg-bg-primary p-6 relative ${isRight ? 'md:mr-8' : 'md:ml-8'}">
+                    <div class="w-full md:w-[45%] btn-base bg-bg-primary p-4 md:p-6 relative ${isRight ? 'md:mr-8' : 'md:ml-8'} rounded-xl hover:border-highlight-primary group">
                         <button onclick="window.openTopic('${topic.title}')" class="w-full text-left">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-lg font-bold uppercase leading-tight">${topic.title}</h3>
-                                ${isCompleted ? '<span class="text-[10px] bg-text-primary text-bg-primary px-1 font-mono">DONE</span>' : ''}
+                                <h3 class="text-base md:text-lg font-bold uppercase leading-tight pr-2 group-hover:text-highlight-primary transition-colors">${topic.title}</h3>
+                                ${isCompleted ? '<span class="text-[10px] bg-highlight-secondary text-bg-primary px-2 py-0.5 rounded-full font-bold flex-shrink-0">DONE</span>' : ''}
                             </div>
                             <p class="text-xs text-text-secondary font-mono mb-4">${topic.subtopics.length} Modules</p>
                             
                             <!-- Mini Subtopic List -->
-                            <div class="space-y-1">
+                            <div class="space-y-1 hidden md:block">
                                 ${topic.subtopics.slice(0, 3).map(sub => `
                                     <div class="flex items-center gap-2 text-xs text-text-secondary">
-                                        <div class="w-1 h-1 bg-text-secondary"></div>
+                                        <div class="w-1 h-1 bg-text-secondary rounded-full"></div>
                                         <span>${sub}</span>
                                     </div>
                                 `).join('')}
@@ -473,34 +498,30 @@
             updateProgress();
         }
 
-        // 3. Topic Modal & Tabs
         window.openTopic = (topic) => {
             currentTopic = topic;
             currentTopicCache = {}; 
-            chatHistory = []; // Reset chat for new topic
+            chatHistory = []; 
             els.modalTitle.textContent = topic;
             updateMarkCompleteBtn();
             els.modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
             switchTab('concept');
         };
 
         window.switchTab = (tab) => {
-            // UI Update
-            Object.values(els.tabs).forEach(t => t.classList.remove('bg-text-primary', 'text-bg-primary'));
-            els.tabs[tab].classList.add('bg-text-primary', 'text-bg-primary');
-            
+            Object.values(els.tabs).forEach(t => t.classList.remove('bg-text-primary', 'text-bg-primary', 'bg-highlight-primary', 'text-white'));
+            els.tabs[tab].classList.add('bg-highlight-primary', 'text-white');
             renderTabContent(tab);
         }
 
         window.forceGenerate = (tab) => {
-            // Bypass cache and force API call
             renderTabContent(tab, true);
         };
 
         async function renderTabContent(tab, forceRefresh = false) {
             els.modalContent.innerHTML = ''; 
 
-            // Special Tab Handling
             if (tab === 'tutor') {
                 renderChatInterface();
                 return;
@@ -510,7 +531,6 @@
                 return;
             }
 
-            // Standard Content Handling (Cached)
             const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_${tab}`;
             const cached = getCached(cacheKey);
 
@@ -520,8 +540,7 @@
                 return;
             }
 
-            // Generate
-            els.modalContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20"><div class="loader-block mb-4"></div><p class="font-mono text-sm">GENERATING ${tab === 'quiz' ? '20 SCENARIO QUESTIONS' : 'UNIQUE CHALLENGE'}...</p></div>`;
+            els.modalContent.innerHTML = `<div class="flex flex-col items-center justify-center py-20"><div class="loader-block mb-4"></div><p class="font-mono text-sm">GENERATING ${tab === 'quiz' ? '15 QUESTIONS' : 'CONTENT'}...</p></div>`;
 
             try {
                 let prompt, data;
@@ -530,26 +549,22 @@
                     Structure your response as follows:
                     1. **The Simple Explanation**: Easy-to-understand definition using real-world analogies.
                     2. **Deep Dive & Examples**: Technical explanation with clear, well-commented code examples.
-                    3. **Important Highlights**: Bullet points of critical concepts to remember.
+                    3. **Important Highlights**: Bullet points of critical concepts to remember. Use bold text to highlight key terms.
                     4. **Pro Tips & Tricks**: Shortcuts, common pitfalls, and guides to learn this fast.
                     5. **Interview Focus**: Why this matters for your job search.
-                    Format: Markdown. Use bold text for emphasis.`;
+                    Format: Markdown. Use bold text for emphasis heavily.`;
                     data = await fetchGemini(prompt);
                 } else if (tab === 'practice') {
                     prompt = `Create a unique, Senior-level coding challenge for ${currentTopic} in ${currentTechnology}. 
                     Focus on real-world system design or optimization. 
                     JSON Format: { "problem": "Detailed real-world scenario description", "hint": "Architectural tip", "solution": "Full code solution" }`;
                     data = await fetchGemini(prompt, true);
-                    
-                    // Add to Bank
                     addToBank('practice', data);
                 } else if (tab === 'quiz') {
-                    prompt = `Generate 20 distinct, conceptual, and scenario-based multiple-choice questions for ${currentTopic} in ${currentTechnology}. 
+                    prompt = `Generate 15 distinct, conceptual, and scenario-based multiple-choice questions for ${currentTopic} in ${currentTechnology}. 
                     Focus on edge cases, production issues, and advanced patterns. 
                     JSON Format: Array of { "q": "Question text", "o": ["A", "B", "C", "D"], "a": "Exact answer string", "e": "Explanation" }`;
                     data = await fetchGemini(prompt, true);
-                    
-                    // Add to Bank
                     addToBank('quiz', data);
                 }
 
@@ -562,14 +577,11 @@
             }
         }
 
-        // --- Question Bank Logic ---
         function addToBank(type, data) {
-            // Ensure structure exists
             if (!questionBank[currentTechnology]) questionBank[currentTechnology] = {};
             if (!questionBank[currentTechnology][currentTopic]) questionBank[currentTechnology][currentTopic] = { quiz: [], practice: [] };
 
             if (type === 'quiz') {
-                // Flatten array if necessary and append
                 const questions = Array.isArray(data) ? data : [data];
                 questionBank[currentTechnology][currentTopic]['quiz'].push(...questions);
             } else if (type === 'practice') {
@@ -592,17 +604,17 @@
             els.modalContent.innerHTML = `
                 <div class="max-w-4xl mx-auto space-y-8">
                     <div class="border-b border-themed pb-4 mb-4">
-                        <h2 class="text-2xl font-bold uppercase">Topic Vault</h2>
+                        <h2 class="text-xl md:text-2xl font-bold uppercase text-highlight-primary">Topic Vault</h2>
                         <p class="text-xs font-mono opacity-70">TOTAL SAVED: ${quizCount} QUESTIONS | ${practiceCount} CHALLENGES</p>
                     </div>
 
                     ${practiceCount > 0 ? `
                         <div>
-                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed">CODING CHALLENGES</h3>
+                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed text-highlight-primary">CODING CHALLENGES</h3>
                             <div class="space-y-4">
                                 ${bank.practice.map((p, i) => `
-                                    <div class="border border-themed p-4 hover:bg-bg-secondary transition-colors cursor-pointer" onclick="window.loadSavedPractice(${i})">
-                                        <div class="font-bold text-sm mb-1">CHALLENGE #${i+1}</div>
+                                    <div class="border border-themed p-4 hover:bg-bg-secondary transition-colors cursor-pointer rounded-lg" onclick="window.loadSavedPractice(${i})">
+                                        <div class="font-bold text-sm mb-1 text-highlight-secondary">CHALLENGE #${i+1}</div>
                                         <div class="text-xs opacity-70 line-clamp-2">${p.problem.substring(0, 150)}...</div>
                                     </div>
                                 `).join('')}
@@ -612,12 +624,12 @@
 
                     ${quizCount > 0 ? `
                         <div>
-                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed">QUIZ QUESTIONS</h3>
+                            <h3 class="font-bold text-lg mb-4 bg-secondary p-2 border border-themed text-highlight-primary">QUIZ QUESTIONS</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 ${bank.quiz.map((q, i) => `
-                                    <div class="border border-themed p-3 text-xs">
-                                        <div class="font-bold mb-1">Q${i+1}: ${q.q}</div>
-                                        <div class="opacity-70 mt-1">Ans: ${q.a}</div>
+                                    <div class="border border-themed p-3 text-xs rounded-lg">
+                                        <div class="font-bold mb-1 text-text-primary">Q${i+1}: ${q.q}</div>
+                                        <div class="opacity-70 mt-1 text-highlight-secondary">Ans: ${q.a}</div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -629,11 +641,9 @@
 
         window.loadSavedPractice = (index) => {
              const data = questionBank[currentTechnology][currentTopic].practice[index];
-             // Cache this as the current practice to prevent switchTab from loading a different cached version
              const cacheKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_practice`;
              setCached(cacheKey, data);
              currentTopicCache['practice'] = data;
-             // Switch to practice tab and inject this data
              switchTab('practice');
         };
 
@@ -650,20 +660,20 @@
                 els.modalContent.innerHTML = `
                     <div class="flex flex-col h-full min-h-[500px]">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold uppercase">The Challenge</h3>
-                            <button onclick="window.forceGenerate('practice')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors">Generate New</button>
+                            <h3 class="font-bold uppercase text-sm md:text-base text-highlight-primary">The Challenge</h3>
+                            <button onclick="window.forceGenerate('practice')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
                         </div>
-                        <div class="bg-secondary p-4 border border-themed mb-4">
+                        <div class="bg-secondary p-4 border border-themed mb-4 rounded-lg">
                             <p class="whitespace-pre-wrap">${data.problem}</p>
                         </div>
-                        <div class="flex-grow border border-themed relative" style="min-height: 400px;">
+                        <div class="flex-grow border border-themed relative rounded-lg overflow-hidden" style="min-height: 300px;">
                             <div id="editor-container" class="absolute inset-0"></div>
                         </div>
                         <div class="mt-4 flex gap-4">
-                            <button onclick="document.getElementById('hint').classList.toggle('hidden')" class="btn-base px-4 py-2 text-xs font-bold uppercase">Hint</button>
-                            <button onclick="window.showSol()" class="btn-base px-4 py-2 text-xs font-bold uppercase bg-text-primary text-bg-primary">Solution</button>
+                            <button onclick="document.getElementById('hint').classList.toggle('hidden')" class="btn-base px-4 py-2 text-xs font-bold uppercase rounded-md">Hint</button>
+                            <button onclick="window.showSol()" class="btn-base px-4 py-2 text-xs font-bold uppercase bg-highlight-primary text-white rounded-md border-highlight-primary">Solution</button>
                         </div>
-                        <div id="hint" class="hidden mt-4 p-4 bg-tertiary text-xs font-mono border-l-2 border-text-primary">${data.hint}</div>
+                        <div id="hint" class="hidden mt-4 p-4 bg-tertiary text-xs font-mono border-l-4 border-highlight-secondary rounded-r-lg">${data.hint}</div>
                     </div>
                 `;
                 initMonaco();
@@ -677,23 +687,21 @@
             }
         }
 
-        // 4. Chat / AI Tutor Logic
         function renderChatInterface() {
             els.modalContent.innerHTML = `
-                <div class="flex flex-col h-full" style="height: 65vh;">
-                    <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-4 border border-themed bg-secondary">
-                        <div class="chat-msg chat-ai rounded-none border border-themed">
-                            <p class="font-bold mb-1">DEECODE TUTOR</p>
+                <div class="flex flex-col h-full" style="height: 100%;">
+                    <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-4 border border-themed bg-secondary rounded-lg mb-4">
+                        <div class="chat-msg chat-ai rounded-lg border-l-4 border-highlight-primary">
+                            <p class="font-bold mb-1 text-highlight-primary">DEECODE TUTOR</p>
                             <p>I am ready to help you master ${currentTopic}. Ask me anything about implementation, edge cases, or interview tricks.</p>
                         </div>
                     </div>
-                    <div class="mt-4 flex gap-2">
-                        <input type="text" id="chat-input" class="flex-grow p-3 bg-primary border border-themed font-mono text-sm focus:outline-none focus:ring-2 focus:ring-text-primary" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') window.sendChat()">
-                        <button onclick="window.sendChat()" class="btn-base px-6 font-bold uppercase bg-text-primary text-bg-primary">Send</button>
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-input" class="flex-grow p-3 bg-primary border border-themed font-mono text-sm focus:outline-none focus:ring-2 focus:ring-highlight-primary rounded-lg" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') window.sendChat()">
+                        <button onclick="window.sendChat()" class="btn-base px-6 font-bold uppercase bg-highlight-primary text-white border-highlight-primary rounded-lg">Send</button>
                     </div>
                 </div>
             `;
-            // Restore history if needed, for now just fresh
             chatHistory.forEach(msg => appendChatMsg(msg.role, msg.text));
         }
 
@@ -706,7 +714,6 @@
             appendChatMsg('user', text);
             chatHistory.push({ role: 'user', parts: [{ text: text }] });
 
-            // Create placeholder
             const historyDiv = document.getElementById('chat-history');
             const loadingId = 'chat-loading-' + Date.now();
             historyDiv.insertAdjacentHTML('beforeend', `
@@ -715,7 +722,6 @@
             historyDiv.scrollTop = historyDiv.scrollHeight;
 
             try {
-                // Contextual prompt
                 const prompt = `Context: Teaching ${currentTopic} in ${currentTechnology}. User asks: ${text}. Keep answer short and technical.`;
                 const reply = await fetchGemini(prompt);
                 
@@ -736,15 +742,11 @@
             div.scrollTop = div.scrollHeight;
         }
 
-        // 5. Offline Export Logic (.html file generation)
         window.exportTopicToHTML = async () => {
             showLoader(true, "Packaging Content...");
-            
-            // Ensure we have data (load if not cached)
             const conceptKey = `${STORAGE_KEYS.CONTENT_PREFIX}${currentTechnology}_${currentTopic}_concept`;
             let concept = getCached(conceptKey);
             if (!concept) {
-                // Fetch if missing
                 try {
                      const prompt = `Write a comprehensive technical guide on "${currentTopic}" in ${currentTechnology}. Format: Markdown.`;
                      concept = await fetchGemini(prompt);
@@ -756,7 +758,6 @@
                 }
             }
 
-            // Create HTML Blob
             const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -765,8 +766,9 @@
     <title>DeeCode: ${currentTopic}</title>
     <style>
         body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
-        h1 { border-bottom: 2px solid #000; padding-bottom: 10px; }
-        code { background: #f4f4f4; padding: 2px 5px; }
+        h1 { border-bottom: 2px solid #000; padding-bottom: 10px; color: #2563eb; }
+        strong { color: #059669; }
+        code { background: #f4f4f4; padding: 2px 5px; color: #7c3aed; }
         pre { background: #f4f4f4; padding: 15px; overflow-x: auto; border: 1px solid #ddd; }
         .footer { margin-top: 50px; font-size: 0.8em; color: #888; border-top: 1px solid #ddd; padding-top: 10px; }
     </style>
@@ -794,16 +796,15 @@
             showLoader(false);
         };
 
-        // --- Helpers ---
         function updateMarkCompleteBtn() {
             const list = progress[currentTechnology] || [];
             if(list.includes(currentTopic)) {
                 els.markCompleteBtn.innerHTML = "<span>COMPLETED</span>";
-                els.markCompleteBtn.classList.add('bg-text-primary', 'text-bg-primary');
+                els.markCompleteBtn.classList.add('bg-highlight-secondary', 'text-white', 'border-highlight-secondary');
                 els.markCompleteBtn.disabled = true;
             } else {
                 els.markCompleteBtn.innerHTML = "<span>MARK DONE</span>";
-                els.markCompleteBtn.classList.remove('bg-text-primary', 'text-bg-primary');
+                els.markCompleteBtn.classList.remove('bg-highlight-secondary', 'text-white', 'border-highlight-secondary');
                 els.markCompleteBtn.disabled = false;
             }
         }
@@ -828,17 +829,15 @@
                 .replace(/\n/gim, '<br>');
         }
 
-        // Quiz Logic
         function renderQuiz() {
             if(quizState.currentQuestionIndex >= quizState.questions.length) {
-                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="window.forceGenerate('quiz')" class="btn-base px-6 py-2 uppercase font-bold mr-4">New Set</button><button onclick="window.restartQuiz()" class="btn-base px-6 py-2 uppercase font-bold">Retry</button></div>`;
+                els.modalContent.innerHTML = `<div class="text-center py-10"><h2 class="text-3xl font-bold mb-4 text-highlight-primary">SCORE: ${quizState.score}/${quizState.questions.length}</h2><button onclick="window.forceGenerate('quiz')" class="btn-base px-6 py-2 uppercase font-bold mr-4 rounded-md">New Set</button><button onclick="window.restartQuiz()" class="btn-base px-6 py-2 uppercase font-bold rounded-md">Retry</button></div>`;
                 return;
             }
-            // Add generate new button to quiz view
             const header = `
                 <div class="flex justify-between items-center mb-6">
                     <div class="text-xs font-mono">QUESTION ${quizState.currentQuestionIndex + 1} OF ${quizState.questions.length}</div>
-                    <button onclick="window.forceGenerate('quiz')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors">Generate New</button>
+                    <button onclick="window.forceGenerate('quiz')" class="btn-base px-3 py-1 text-xs font-bold uppercase bg-bg-secondary hover:bg-text-primary hover:text-bg-primary transition-colors rounded-md">Generate New</button>
                 </div>
             `;
             
@@ -846,12 +845,12 @@
             els.modalContent.innerHTML = `
                 <div class="max-w-2xl mx-auto py-6">
                     ${header}
-                    <h3 class="text-xl font-bold mb-6">${q.q}</h3>
+                    <h3 class="text-base md:text-xl font-bold mb-6 text-highlight-primary">${q.q}</h3>
                     <div class="space-y-3">
-                        ${q.o.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-sm">${opt}</button>`).join('')}
+                        ${q.o.map(opt => `<button onclick="window.checkAns(this, '${opt.replace(/'/g,"\\'")}')" class="w-full text-left p-3 md:p-4 border border-themed hover:bg-bg-tertiary transition-colors font-mono text-xs md:text-sm rounded-lg">${opt}</button>`).join('')}
                     </div>
-                    <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary"></div>
-                    <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-text-primary text-bg-primary">NEXT</button>
+                    <div id="q-feedback" class="hidden mt-6 p-4 border border-themed bg-secondary text-sm rounded-lg"></div>
+                    <button id="q-next" onclick="window.nextQ()" class="hidden mt-4 w-full btn-base py-3 font-bold bg-highlight-primary text-white border-highlight-primary rounded-lg">NEXT</button>
                 </div>
             `;
         }
@@ -863,21 +862,19 @@
             
             document.querySelectorAll('#modalContent button:not(#q-next)').forEach(b => b.disabled = true);
             const feed = document.getElementById('q-feedback');
-            feed.innerHTML = `<p class="font-bold mb-1">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.e}</p>`;
+            feed.innerHTML = `<p class="font-bold mb-1" style="color: ${isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)'}">${isCorrect ? 'CORRECT' : 'INCORRECT'}</p><p>${q.e}</p>`;
             feed.classList.remove('hidden');
-            feed.style.borderColor = isCorrect ? 'var(--text-primary)' : 'var(--incorrect-color)';
+            feed.style.borderColor = isCorrect ? 'var(--highlight-secondary)' : 'var(--incorrect-color)';
             document.getElementById('q-next').classList.remove('hidden');
         };
         window.nextQ = () => { quizState.currentQuestionIndex++; renderQuiz(); };
         window.restartQuiz = () => { quizState.currentQuestionIndex = 0; quizState.score = 0; renderQuiz(); };
 
-        // Monaco Init
         function initMonaco() {
             setTimeout(() => {
                 const c = document.getElementById('editor-container');
                 if(!c) return;
                 
-                // Safe dispose
                 if(monacoEditorInstance) {
                     try { monacoEditorInstance.dispose(); } catch(e) {}
                     monacoEditorInstance = null;
@@ -899,19 +896,15 @@
             }, 100);
         }
 
-        // --- Event Listeners ---
-        els.tabs.concept.onclick = () => switchTab('concept');
-        els.tabs.practice.onclick = () => switchTab('practice');
-        els.tabs.quiz.onclick = () => switchTab('quiz');
-        els.tabs.bank.onclick = () => switchTab('bank');
-        els.tabs.tutor.onclick = () => switchTab('tutor');
-
         document.getElementById('themeToggle').onclick = () => {
             document.documentElement.classList.toggle('dark');
             if(monacoEditorInstance) monaco.editor.setTheme(document.documentElement.classList.contains('dark') ? 'vs-dark' : 'vs');
         };
         document.getElementById('backButton').onclick = () => { els.roadmapContainer.classList.add('hidden'); els.techSelection.classList.remove('hidden'); };
-        document.getElementById('closeModal').onclick = () => els.modal.classList.add('hidden');
+        document.getElementById('closeModal').onclick = () => {
+            els.modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
         
         els.markCompleteBtn.onclick = () => {
             if(!progress[currentTechnology]) progress[currentTechnology] = [];
@@ -921,11 +914,9 @@
             renderRoadmap(currentRoadmapData);
         };
 
-        // --- Helpers ---
         function showError(msg) { els.error.textContent = msg; els.error.classList.remove('hidden'); setTimeout(()=>els.error.classList.add('hidden'), 3000); }
         function showLoader(show, text) { els.loaderText.textContent = text||"Loading..."; els.loader.classList.toggle('hidden', !show); }
 
-        // Start
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
         init();
 
